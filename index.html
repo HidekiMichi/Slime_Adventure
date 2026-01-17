@@ -48,59 +48,10 @@
             z-index: 10;
         }
 
-        #gameTitle {
-            position: absolute;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 32px;
-            color: #7dd3fc;
-            text-shadow: 0 0 10px rgba(125,211,252,0.6);
-            pointer-events: none;
-            z-index: 10;
-            font-weight: bold;
-            display: none;
-        }
-
         .stat {
             background: rgba(0,0,0,0.3);
             padding: 10px 20px;
             border-radius: 15px;
-            backdrop-filter: blur(10px);
-        }
-
-        #combo {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 72px;
-            color: #fbbf24;
-            text-shadow: 0 0 20px rgba(251,191,36,0.8);
-            pointer-events: none;
-            z-index: 15;
-            display: none;
-            animation: comboAnim 0.5s ease-out;
-        }
-
-        @keyframes comboAnim {
-            0% { transform: translate(-50%, -50%) scale(0); }
-            50% { transform: translate(-50%, -50%) scale(1.2); }
-            100% { transform: translate(-50%, -50%) scale(1); }
-        }
-
-        #powerupIndicator {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0,0,0,0.7);
-            padding: 15px 30px;
-            border-radius: 15px;
-            color: #fbbf24;
-            font-size: 20px;
-            display: none;
-            z-index: 10;
             backdrop-filter: blur(10px);
         }
 
@@ -183,7 +134,6 @@
         .slimePreview {
             width: 60px;
             height: 50px;
-            position: relative;
         }
 
         .controls {
@@ -277,6 +227,7 @@
             gap: 15px;
             justify-content: center;
             margin-top: 20px;
+            flex-wrap: wrap;
         }
 
         .gameOverButtons button {
@@ -285,7 +236,7 @@
             margin: 0;
         }
 
-        #store, #leaderboard {
+        #leaderboard {
             position: absolute;
             top: 50%;
             left: 50%;
@@ -297,84 +248,14 @@
             color: white;
             z-index: 25;
             min-width: 500px;
+            max-width: 90vw;
             max-height: 80vh;
             overflow-y: auto;
         }
 
-        #store h2, #leaderboard h2 {
+        #leaderboard h2 {
             font-size: 42px;
             margin-bottom: 20px;
-            color: #fbbf24;
-            text-align: center;
-        }
-
-        .storeItem {
-            background: rgba(255,255,255,0.1);
-            padding: 20px;
-            margin: 15px 0;
-            border-radius: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border: 2px solid transparent;
-            transition: all 0.3s;
-        }
-
-        .storeItem:hover {
-            border-color: #fbbf24;
-            background: rgba(255,255,255,0.15);
-        }
-
-        .storeItem.owned {
-            opacity: 0.6;
-            border-color: #22c55e;
-        }
-
-        .itemInfo {
-            text-align: left;
-            flex: 1;
-        }
-
-        .itemInfo h3 {
-            font-size: 24px;
-            margin-bottom: 5px;
-        }
-
-        .itemInfo p {
-            font-size: 14px;
-            color: #94a3b8;
-        }
-
-        .itemPrice {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .itemPrice .coins {
-            font-size: 20px;
-            color: #fbbf24;
-            font-weight: bold;
-        }
-
-        .itemPrice button {
-            padding: 8px 20px;
-            font-size: 16px;
-            margin: 0;
-        }
-
-        .itemPrice button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .coinDisplay {
-            background: rgba(251,191,36,0.2);
-            padding: 10px 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            font-size: 24px;
             color: #fbbf24;
             text-align: center;
         }
@@ -423,32 +304,18 @@
             color: #4ecdc4;
         }
 
-        .nameInput {
-            display: flex;
-            gap: 10px;
-            margin: 20px 0;
-            justify-content: center;
-        }
-
-        .nameInput input {
-            padding: 10px 15px;
-            font-size: 18px;
-            border-radius: 10px;
-            border: 2px solid #7dd3fc;
-            background: rgba(255,255,255,0.1);
-            color: white;
-            outline: none;
-        }
-
-        .nameInput input::placeholder {
-            color: #94a3b8;
-        }
-
         .closeButton {
             margin-top: 20px;
             padding: 12px 40px;
             font-size: 20px;
             background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        }
+
+        .loadingMsg {
+            text-align: center;
+            color: #94a3b8;
+            padding: 20px;
+            font-size: 18px;
         }
 
         .floatingBubble {
@@ -462,6 +329,32 @@
         @keyframes float {
             0%, 100% { transform: translateY(0) translateX(0); }
             50% { transform: translateY(-30px) translateX(20px); }
+        }
+
+        #combo, #powerupIndicator {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 48px;
+            color: #fbbf24;
+            text-shadow: 0 0 20px rgba(251,191,36,0.8);
+            pointer-events: none;
+            z-index: 15;
+            display: none;
+        }
+
+        #combo {
+            top: 50%;
+            font-size: 72px;
+        }
+
+        #powerupIndicator {
+            bottom: 20px;
+            font-size: 24px;
+            background: rgba(0,0,0,0.7);
+            padding: 15px 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
         }
     </style>
 </head>
@@ -513,11 +406,8 @@
             </div>
 
             <button onclick="startGame()">Start Adventure!</button>
-            <button onclick="showStore()" style="margin-top: 10px; background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);">🏪 Store</button>
             <button onclick="showLeaderboard()" style="margin-top: 10px; background: linear-gradient(135deg, #4ecdc4 0%, #44a6a8 100%);">🏆 Leaderboard</button>
         </div>
-        
-        <div id="gameTitle">🫧 Slime Bubble Pop</div>
         
         <div id="ui">
             <div class="stat">Score: <span id="score">0</span></div>
@@ -533,28 +423,81 @@
             <p>Final Score: <span id="finalScore">0</span></p>
             <p>Level Reached: <span id="finalLevel">1</span></p>
             <p>Best Combo: <span id="bestCombo">0</span>x</p>
-            <p>Coins Earned: <span id="coinsEarned">0</span> 🪙</p>
             <div class="gameOverButtons">
                 <button onclick="restartGame()">Play Again</button>
                 <button onclick="showMainMenu()">Main Menu</button>
+                <button onclick="submitScore()">Submit Score</button>
             </div>
-        </div>
-
-        <div id="store">
-            <h2>🏪 Store</h2>
-            <div class="coinDisplay">
-                Your Coins: <span id="storeCoins">0</span> 🪙
-            </div>
-            <div id="storeItems"></div>
-            <button class="closeButton" onclick="closeStore()">Close</button>
         </div>
 
         <div id="leaderboard">
-            <h2>🏆 Leaderboard</h2>
-            <div class="leaderboardTable" id="leaderboardTable"></div>
+            <h2>🏆 Global Leaderboard</h2>
+            <div class="leaderboardTable" id="leaderboardTable">
+                <div class="loadingMsg">Loading scores...</div>
+            </div>
             <button class="closeButton" onclick="closeLeaderboard()">Close</button>
         </div>
     </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        // TODO: Replace with your Firebase config
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getFirestore, collection, addDoc, query, orderBy, limit, getDocs, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        // ⚠️ REPLACE THIS WITH YOUR FIREBASE CONFIG
+        const firebaseConfig = {
+            apiKey: "AIzaSyBAdtYCDQ8wr167I4AsM6U22Fe-xs9fjUM",
+            authDomain: "slime-adventure-bf005.firebaseapp.com",
+            projectId: "slime-adventure-bf005",
+            storageBucket: "slime-adventure-bf005.firebasestorage.app",
+            messagingSenderId: "853427714497",
+            appId: "1:853427714497:web:596eeadc3cafc0a7541740",
+            measurementId: "G-X4YP13ZEWZ"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Make Firebase functions available globally
+        window.saveScoreToFirebase = async function(playerName, playerScore) {
+            try {
+                await addDoc(collection(db, 'leaderboard'), {
+                    name: playerName,
+                    score: playerScore,
+                    timestamp: serverTimestamp()
+                });
+                alert(`Score saved! Check the leaderboard to see your rank!`);
+                return true;
+            } catch (error) {
+                console.error('Error saving score:', error);
+                alert('Failed to save score. Please try again.');
+                return false;
+            }
+        };
+
+        window.loadLeaderboard = async function() {
+            try {
+                const q = query(
+                    collection(db, 'leaderboard'),
+                    orderBy('score', 'desc'),
+                    limit(100)
+                );
+                const querySnapshot = await getDocs(q);
+                const scores = [];
+                querySnapshot.forEach((doc) => {
+                    scores.push(doc.data());
+                });
+                return scores;
+            } catch (error) {
+                console.error('Error loading leaderboard:', error);
+                return [];
+            }
+        };
+
+        console.log('Firebase initialized successfully!');
+    </script>
 
     <script>
         const canvas = document.getElementById('gameCanvas');
@@ -569,7 +512,6 @@
         let powerups = [];
         let obstacles = [];
         let mouseX = canvas.width / 2;
-        let mouseY = canvas.height - 100;
         let selectedSlimeColor = 'blue';
         let keys = {};
         let combo = 0;
@@ -581,21 +523,7 @@
         let musicEnabled = true;
         let sfxEnabled = true;
         let audioContext = null;
-        let totalCoins = 0;
-        let ownedItems = [];
-        let playerName = '';
-        let leaderboardData = [];
-        let gameData = { coins: 0, items: [], leaderboard: [] };
-        let storageAvailable = false;
-
-        const storeItemsData = [
-            { id: 'extraLife', name: 'Extra Starting Life', price: 100, description: 'Start with 4 lives instead of 3', icon: '❤️' },
-            { id: 'scoreBoost', name: 'Score Multiplier', price: 150, description: 'Earn 1.5x more points', icon: '⭐' },
-            { id: 'slowerBubbles', name: 'Bubble Slower', price: 120, description: 'Bubbles fall 20% slower', icon: '⏱️' },
-            { id: 'magnetUpgrade', name: 'Magnet Upgrade', price: 200, description: 'Magnet powerup lasts 2x longer', icon: '🧲' },
-            { id: 'shieldUpgrade', name: 'Shield Upgrade', price: 200, description: 'Shield powerup lasts 2x longer', icon: '🛡️' },
-            { id: 'rarePowerups', name: 'Better Powerups', price: 250, description: 'Powerups spawn more frequently', icon: '✨' }
-        ];
+        let currentPlayerName = '';
 
         const slimeColors = {
             blue: { primary: '#7dd3fc', secondary: '#38bdf8', tertiary: '#0284c7', drop: '#60a5fa' },
@@ -611,8 +539,7 @@
             width: 60,
             height: 50,
             speed: 8,
-            targetX: canvas.width / 2,
-            startingLives: 3
+            targetX: canvas.width / 2
         };
 
         class Bubble {
@@ -631,22 +558,15 @@
             }
 
             update() {
-                let speedMod = activePowerup === 'slowmo' ? 0.5 : 1;
-                if (ownedItems.includes('slowerBubbles')) speedMod *= 0.8;
-                
-                this.y += this.speed * speedMod;
+                this.y += this.speed * (activePowerup === 'slowmo' ? 0.5 : 1);
                 this.wobble += this.wobbleSpeed;
                 this.x += Math.sin(this.wobble) * 2;
             }
 
             draw() {
                 const gradient = ctx.createRadialGradient(
-                    this.x - this.radius * 0.3, 
-                    this.y - this.radius * 0.3, 
-                    this.radius * 0.1,
-                    this.x, 
-                    this.y, 
-                    this.radius
+                    this.x - this.radius * 0.3, this.y - this.radius * 0.3, this.radius * 0.1,
+                    this.x, this.y, this.radius
                 );
                 gradient.addColorStop(0, this.type === 'good' ? 'rgba(255,255,255,0.8)' : 'rgba(255,200,200,0.8)');
                 gradient.addColorStop(0.5, this.color);
@@ -826,39 +746,6 @@
             playSound(baseFreq, 0.15, 'triangle');
         }
 
-        function playBackgroundMusic() {
-            if (!musicEnabled || !audioContext) return;
-            
-            const notes = [523.25, 587.33, 659.25, 698.46, 783.99, 880.00];
-            let noteIndex = 0;
-            
-            function playNote() {
-                if (!musicEnabled) return;
-                
-                const oscillator = audioContext.createOscillator();
-                const gainNode = audioContext.createGain();
-                
-                oscillator.connect(gainNode);
-                gainNode.connect(audioContext.destination);
-                
-                oscillator.frequency.value = notes[noteIndex % notes.length];
-                oscillator.type = 'sine';
-                
-                gainNode.gain.setValueAtTime(0.05, audioContext.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
-                
-                oscillator.start(audioContext.currentTime);
-                oscillator.stop(audioContext.currentTime + 0.4);
-                
-                noteIndex++;
-                if (gameRunning) {
-                    setTimeout(playNote, 500);
-                }
-            }
-            
-            playNote();
-        }
-
         function toggleMusic() {
             musicEnabled = !musicEnabled;
             const btn = document.getElementById('musicToggle');
@@ -883,16 +770,6 @@
                 ctx.beginPath();
                 ctx.arc(slime.x, slime.y, slime.width / 2 + 15, 0, Math.PI * 2);
                 ctx.stroke();
-                
-                for (let i = 0; i < 8; i++) {
-                    const angle = (Date.now() / 1000 + i * Math.PI / 4) % (Math.PI * 2);
-                    const x = slime.x + Math.cos(angle) * (slime.width / 2 + 15);
-                    const y = slime.y + Math.sin(angle) * (slime.width / 2 + 15);
-                    ctx.fillStyle = 'rgba(125,211,252,0.6)';
-                    ctx.beginPath();
-                    ctx.arc(x, y, 3, 0, Math.PI * 2);
-                    ctx.fill();
-                }
             }
             
             ctx.shadowBlur = 20;
@@ -954,10 +831,7 @@
             
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            const gradient = ctx.createRadialGradient(
-                centerX, centerY - 5, 5,
-                centerX, centerY, 20
-            );
+            const gradient = ctx.createRadialGradient(centerX, centerY - 5, 5, centerX, centerY, 20);
             gradient.addColorStop(0, colors.primary);
             gradient.addColorStop(0.5, colors.secondary);
             gradient.addColorStop(1, colors.tertiary);
@@ -1008,12 +882,7 @@
 
         function activatePowerup(type) {
             activePowerup = type;
-            let duration = 300;
-            
-            if (type === 'magnet' && ownedItems.includes('magnetUpgrade')) duration *= 2;
-            if (type === 'shield' && ownedItems.includes('shieldUpgrade')) duration *= 2;
-            
-            powerupTimer = duration;
+            powerupTimer = 300;
             
             const indicator = document.getElementById('powerupIndicator');
             const messages = {
@@ -1083,12 +952,8 @@
 
                 if (checkCollision(bubble)) {
                     if (bubble.type === 'good') {
-                        let points = bubble.points;
-                        if (activePowerup === 'double') points *= 2;
-                        if (ownedItems.includes('scoreBoost')) points = Math.floor(points * 1.5);
-                        
+                        const points = bubble.points * (activePowerup === 'double' ? 2 : 1);
                         score += points;
-                        totalCoins += Math.floor(points / 10);
                         combo++;
                         comboTimer = 120;
                         
@@ -1176,7 +1041,7 @@
 
             if (powerupTimer > 0) {
                 powerupTimer--;
-            } else if (activePowerup && activePowerup !== 'life') {
+            } else if (activePowerup) {
                 activePowerup = null;
                 document.getElementById('powerupIndicator').style.display = 'none';
             }
@@ -1186,7 +1051,6 @@
             }
 
             bgOffset += 0.5;
-
             updateUI();
         }
 
@@ -1203,13 +1067,6 @@
                 ctx.arc(x, y, size, 0, Math.PI * 2);
                 ctx.fill();
             }
-
-            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-            gradient.addColorStop(0, 'rgba(56,189,248,0.05)');
-            gradient.addColorStop(0.5, 'rgba(139,92,246,0.05)');
-            gradient.addColorStop(1, 'rgba(236,72,153,0.05)');
-            ctx.fillStyle = gradient;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
         }
 
         function drawGame() {
@@ -1233,44 +1090,18 @@
             document.getElementById('lives').textContent = '❤️'.repeat(lives);
         }
 
-        async function endGame() {
+        function endGame() {
             gameRunning = false;
-            const coinsEarned = Math.floor(score / 10);
             document.getElementById('finalScore').textContent = score;
             document.getElementById('finalLevel').textContent = level;
             document.getElementById('bestCombo').textContent = bestCombo;
-            document.getElementById('coinsEarned').textContent = coinsEarned;
             document.getElementById('gameOver').style.display = 'block';
-            
-            try {
-                await saveToStorage();
-            } catch (error) {
-                console.error('Error saving game data:', error);
-            }
-            
-            // Show name input if player achieved a score
-            if (score > 0) {
-                setTimeout(() => {
-                    try {
-                        const shouldSave = confirm(`Great job! You scored ${score} points!\n\nWould you like to save your score to the leaderboard?`);
-                        if (shouldSave) {
-                            const name = prompt('Enter your name for the leaderboard:', playerName || 'Player');
-                            if (name && name.trim()) {
-                                playerName = name.trim();
-                                saveScoreToLeaderboard(playerName, score);
-                            }
-                        }
-                    } catch (error) {
-                        console.error('Error with score prompt:', error);
-                    }
-                }, 500);
-            }
         }
 
         function restartGame() {
             score = 0;
             level = 1;
-            lives = slime.startingLives;
+            lives = 3;
             combo = 0;
             bestCombo = 0;
             bubbles = [];
@@ -1282,10 +1113,6 @@
             gameRunning = true;
             document.getElementById('gameOver').style.display = 'none';
             updateUI();
-            
-            if (musicEnabled) {
-                playBackgroundMusic();
-            }
         }
 
         function showMainMenu() {
@@ -1298,160 +1125,45 @@
             obstacles = [];
         }
 
-        async function checkStorageAvailability() {
-            try {
-                if (typeof window.storage !== 'undefined') {
-                    await window.storage.get('test-key');
-                    storageAvailable = true;
-                    console.log('Storage is available');
-                } else {
-                    storageAvailable = false;
-                    console.log('Storage not available, using memory only');
+        async function submitScore() {
+            const name = prompt('Enter your name for the leaderboard:', currentPlayerName || 'Player');
+            if (name && name.trim()) {
+                currentPlayerName = name.trim();
+                const success = await window.saveScoreToFirebase(currentPlayerName, score);
+                if (success) {
+                    showLeaderboard();
                 }
-            } catch (error) {
-                storageAvailable = false;
-                console.log('Storage not available, using memory only');
             }
-        }
-
-        async function saveToStorage() {
-            const coinsToAdd = Math.floor(score / 10);
-            totalCoins += coinsToAdd;
-            gameData.coins = totalCoins;
-            gameData.items = ownedItems;
-            
-            if (!storageAvailable) {
-                console.log('Using memory storage only');
-                return;
-            }
-            
-            try {
-                await window.storage.set('slime-game-data', JSON.stringify(gameData));
-            } catch (error) {
-                console.log('Could not save to storage:', error.message);
-            }
-        }
-
-        async function loadFromStorage() {
-            if (!storageAvailable) {
-                console.log('Storage not available, starting fresh');
-                return;
-            }
-            
-            try {
-                const savedData = await window.storage.get('slime-game-data');
-                if (savedData) {
-                    gameData = JSON.parse(savedData.value);
-                    totalCoins = gameData.coins || 0;
-                    ownedItems = gameData.items || [];
-                    
-                    if (ownedItems.includes('extraLife')) {
-                        slime.startingLives = 4;
-                    }
-                }
-            } catch (error) {
-                console.log('Could not load from storage:', error.message);
-            }
-        }
-
-        async function showStore() {
-            document.getElementById('startMenu').style.display = 'none';
-            document.getElementById('store').style.display = 'block';
-            document.getElementById('storeCoins').textContent = totalCoins;
-            
-            const storeItemsContainer = document.getElementById('storeItems');
-            storeItemsContainer.innerHTML = '';
-            
-            storeItemsData.forEach(item => {
-                const owned = ownedItems.includes(item.id);
-                const itemDiv = document.createElement('div');
-                itemDiv.className = 'storeItem' + (owned ? ' owned' : '');
-                itemDiv.innerHTML = `
-                    <div class="itemInfo">
-                        <h3>${item.icon} ${item.name}</h3>
-                        <p>${item.description}</p>
-                    </div>
-                    <div class="itemPrice">
-                        <span class="coins">${item.price} 🪙</span>
-                        <button onclick="buyItem('${item.id}', ${item.price})" ${owned || totalCoins < item.price ? 'disabled' : ''}>
-                            ${owned ? 'Owned' : 'Buy'}
-                        </button>
-                    </div>
-                `;
-                storeItemsContainer.appendChild(itemDiv);
-            });
-        }
-
-        async function buyItem(itemId, price) {
-            if (totalCoins >= price && !ownedItems.includes(itemId)) {
-                totalCoins -= price;
-                ownedItems.push(itemId);
-                gameData.coins = totalCoins;
-                gameData.items = ownedItems;
-                
-                if (itemId === 'extraLife') {
-                    slime.startingLives = 4;
-                    lives = 4;
-                }
-                
-                if (storageAvailable) {
-                    try {
-                        await window.storage.set('slime-game-data', JSON.stringify(gameData));
-                    } catch (error) {
-                        console.log('Could not save purchase:', error.message);
-                    }
-                }
-                
-                playPowerupSound();
-                showStore();
-            }
-        }
-
-        function closeStore() {
-            document.getElementById('store').style.display = 'none';
-            document.getElementById('startMenu').style.display = 'flex';
         }
 
         async function showLeaderboard() {
             document.getElementById('startMenu').style.display = 'none';
+            document.getElementById('gameOver').style.display = 'none';
             document.getElementById('leaderboard').style.display = 'block';
             
-            if (!storageAvailable) {
-                console.log('Using in-memory leaderboard');
-                displayLeaderboard();
-                return;
-            }
+            const table = document.getElementById('leaderboardTable');
+            table.innerHTML = '<div class="loadingMsg">Loading scores...</div>';
             
-            try {
-                const savedData = await window.storage.get('slime-game-leaderboard', true);
-                if (savedData) {
-                    leaderboardData = JSON.parse(savedData.value);
-                } else {
-                    leaderboardData = gameData.leaderboard || [];
-                }
-            } catch (error) {
-                console.error('Error loading leaderboard:', error);
-                leaderboardData = gameData.leaderboard || [];
-            }
-            
-            displayLeaderboard();
+            const scores = await window.loadLeaderboard();
+            displayLeaderboard(scores);
         }
 
-        function displayLeaderboard() {
+        function displayLeaderboard(scores) {
             const table = document.getElementById('leaderboardTable');
             table.innerHTML = '';
             
-            leaderboardData.sort((a, b) => b.score - a.score);
-            leaderboardData = leaderboardData.slice(0, 10);
-            
-            if (leaderboardData.length === 0) {
+            if (scores.length === 0) {
                 table.innerHTML = '<p style="text-align: center; color: #94a3b8;">No scores yet. Be the first!</p>';
                 return;
             }
             
-            leaderboardData.forEach((entry, index) => {
+            scores.forEach((entry, index) => {
                 const entryDiv = document.createElement('div');
                 entryDiv.className = 'leaderboardEntry';
+                
+                if (entry.name === currentPlayerName && entry.score === score) {
+                    entryDiv.classList.add('myScore');
+                }
                 
                 let rankClass = '';
                 if (index === 0) rankClass = 'gold';
@@ -1465,37 +1177,6 @@
                 `;
                 table.appendChild(entryDiv);
             });
-        }
-
-        async function saveScoreToLeaderboard(name, playerScore) {
-            // Add to in-memory leaderboard
-            leaderboardData.push({ 
-                name: name, 
-                score: playerScore, 
-                timestamp: Date.now() 
-            });
-            
-            // Sort and keep top 100
-            leaderboardData.sort((a, b) => b.score - a.score);
-            leaderboardData = leaderboardData.slice(0, 100);
-            
-            gameData.leaderboard = leaderboardData;
-            
-            if (!storageAvailable) {
-                const rank = leaderboardData.findIndex(e => e.score === playerScore && e.name === name) + 1;
-                alert(`Score saved in session! You rank #${rank}!\n\nNote: Scores are not persistent in this session.`);
-                return;
-            }
-            
-            try {
-                await window.storage.set('slime-game-leaderboard', JSON.stringify(leaderboardData), true);
-                const rank = leaderboardData.findIndex(e => e.score === playerScore && e.name === name) + 1;
-                alert(`Score saved globally! You rank #${rank} on the worldwide leaderboard!`);
-            } catch (error) {
-                console.error('Error saving to leaderboard:', error);
-                const rank = leaderboardData.findIndex(e => e.score === playerScore && e.name === name) + 1;
-                alert(`Score saved in session! You rank #${rank}!\n\nNote: Could not save to global leaderboard.`);
-            }
         }
 
         function closeLeaderboard() {
@@ -1515,15 +1196,11 @@
         function startGame() {
             document.getElementById('startMenu').style.display = 'none';
             gameRunning = true;
-            lives = slime.startingLives;
+            lives = 3;
             score = 0;
             level = 1;
             combo = 0;
             initAudio();
-            
-            if (musicEnabled) {
-                playBackgroundMusic();
-            }
         }
 
         document.addEventListener('keydown', (e) => {
@@ -1554,10 +1231,7 @@
 
         setInterval(() => {
             if (gameRunning && Math.random() < 0.3) {
-                const spawnChance = ownedItems.includes('rarePowerups') ? 0.5 : 0.3;
-                if (Math.random() < spawnChance) {
-                    spawnPowerup();
-                }
+                spawnPowerup();
             }
         }, 5000);
 
@@ -1572,12 +1246,7 @@
             drawSlimePreview(canvas, colors[index]);
         });
 
-        // Initialize storage and load data
-        checkStorageAvailability().then(() => {
-            loadFromStorage();
-            updateUI();
-        });
-        
+        updateUI();
         gameLoop();
     </script>
 </body>
