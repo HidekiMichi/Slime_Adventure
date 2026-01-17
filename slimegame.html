@@ -1,0 +1,1590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slime Bubble Pop Adventure</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        #gameContainer {
+            position: relative;
+            background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            overflow: hidden;
+        }
+
+        #gameCanvas {
+            display: block;
+            cursor: none;
+        }
+
+        #ui {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            justify-content: space-between;
+            color: white;
+            font-size: 24px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        #gameTitle {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 32px;
+            color: #7dd3fc;
+            text-shadow: 0 0 10px rgba(125,211,252,0.6);
+            pointer-events: none;
+            z-index: 10;
+            font-weight: bold;
+            display: none;
+        }
+
+        #gameTitle.playing {
+            display: block;
+        }
+
+        .stat {
+            background: rgba(0,0,0,0.3);
+            padding: 10px 20px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        #combo {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 72px;
+            color: #fbbf24;
+            text-shadow: 0 0 20px rgba(251,191,36,0.8);
+            pointer-events: none;
+            z-index: 15;
+            display: none;
+            animation: comboAnim 0.5s ease-out;
+        }
+
+        @keyframes comboAnim {
+            0% { transform: translate(-50%, -50%) scale(0); }
+            50% { transform: translate(-50%, -50%) scale(1.2); }
+            100% { transform: translate(-50%, -50%) scale(1); }
+        }
+
+        #powerupIndicator {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.7);
+            padding: 15px 30px;
+            border-radius: 15px;
+            color: #fbbf24;
+            font-size: 20px;
+            display: none;
+            z-index: 10;
+            backdrop-filter: blur(10px);
+        }
+
+        #startMenu {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #1a1a2e 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            z-index: 30;
+            overflow-y: auto;
+            padding: 30px 20px 20px 20px;
+        }
+
+        #startMenu h1 {
+            font-size: 48px;
+            color: #7dd3fc;
+            text-shadow: 0 0 20px rgba(125,211,252,0.5);
+            margin-bottom: 10px;
+            margin-top: 10px;
+            animation: glow 2s ease-in-out infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% { text-shadow: 0 0 20px rgba(125,211,252,0.5); }
+            50% { text-shadow: 0 0 40px rgba(125,211,252,0.8); }
+        }
+
+        .subtitle {
+            font-size: 18px;
+            color: #94a3b8;
+            margin-bottom: 20px;
+        }
+
+        .slimeSelection {
+            margin-bottom: 20px;
+        }
+
+        .slimeSelection h3 {
+            color: white;
+            margin-bottom: 12px;
+            font-size: 20px;
+        }
+
+        .slimeOptions {
+            display: flex;
+            gap: 20px;
+        }
+
+        .slimeOption {
+            width: 100px;
+            height: 100px;
+            border-radius: 20px;
+            cursor: pointer;
+            border: 4px solid transparent;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255,255,255,0.1);
+            position: relative;
+        }
+
+        .slimeOption:hover {
+            transform: scale(1.1);
+            border-color: rgba(255,255,255,0.3);
+        }
+
+        .slimeOption.selected {
+            border-color: #7dd3fc;
+            box-shadow: 0 0 20px rgba(125,211,252,0.5);
+            transform: scale(1.15);
+        }
+
+        .slimePreview {
+            width: 60px;
+            height: 50px;
+            position: relative;
+        }
+
+        .controls {
+            color: #94a3b8;
+            margin-bottom: 15px;
+            text-align: center;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .controls strong {
+            color: #7dd3fc;
+        }
+
+        .audioControls {
+            margin-bottom: 15px;
+            display: flex;
+            gap: 15px;
+        }
+
+        .audioToggle {
+            padding: 8px 16px;
+            font-size: 16px;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border: 2px solid #7dd3fc;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .audioToggle:hover {
+            background: rgba(125,211,252,0.2);
+        }
+
+        .audioToggle.muted {
+            opacity: 0.5;
+        }
+
+        button {
+            margin-top: 10px;
+            padding: 12px 40px;
+            font-size: 22px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            box-shadow: 0 5px 20px rgba(102,126,234,0.4);
+            font-weight: bold;
+        }
+
+        button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 25px rgba(102,126,234,0.6);
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        #gameOver {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.95);
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            display: none;
+            color: white;
+            z-index: 20;
+            min-width: 400px;
+        }
+
+        #gameOver h2 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            color: #4ecdc4;
+        }
+
+        #gameOver p {
+            font-size: 24px;
+            margin: 10px 0;
+        }
+
+        .gameOverButtons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .gameOverButtons button {
+            padding: 12px 30px;
+            font-size: 20px;
+            margin: 0;
+        }
+
+        #store, #leaderboard {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.95);
+            padding: 40px;
+            border-radius: 20px;
+            display: none;
+            color: white;
+            z-index: 25;
+            min-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        #store h2, #leaderboard h2 {
+            font-size: 42px;
+            margin-bottom: 20px;
+            color: #fbbf24;
+            text-align: center;
+        }
+
+        .storeItem {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .storeItem:hover {
+            border-color: #fbbf24;
+            background: rgba(255,255,255,0.15);
+        }
+
+        .storeItem.owned {
+            opacity: 0.6;
+            border-color: #22c55e;
+        }
+
+        .itemInfo {
+            text-align: left;
+            flex: 1;
+        }
+
+        .itemInfo h3 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .itemInfo p {
+            font-size: 14px;
+            color: #94a3b8;
+        }
+
+        .itemPrice {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .itemPrice .coins {
+            font-size: 20px;
+            color: #fbbf24;
+            font-weight: bold;
+        }
+
+        .itemPrice button {
+            padding: 8px 20px;
+            font-size: 16px;
+            margin: 0;
+        }
+
+        .itemPrice button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .coinDisplay {
+            background: rgba(251,191,36,0.2);
+            padding: 10px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 24px;
+            color: #fbbf24;
+            text-align: center;
+        }
+
+        .leaderboardTable {
+            width: 100%;
+            margin: 20px 0;
+        }
+
+        .leaderboardEntry {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px;
+            margin: 10px 0;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            align-items: center;
+        }
+
+        .leaderboardEntry.myScore {
+            border: 2px solid #7dd3fc;
+            background: rgba(125,211,252,0.2);
+        }
+
+        .leaderboardRank {
+            font-size: 32px;
+            font-weight: bold;
+            width: 60px;
+            text-align: center;
+        }
+
+        .leaderboardRank.gold { color: #fbbf24; }
+        .leaderboardRank.silver { color: #94a3b8; }
+        .leaderboardRank.bronze { color: #f97316; }
+
+        .leaderboardName {
+            flex: 1;
+            font-size: 20px;
+            text-align: left;
+            padding-left: 20px;
+        }
+
+        .leaderboardScore {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4ecdc4;
+        }
+
+        .nameInput {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            justify-content: center;
+        }
+
+        .nameInput input {
+            padding: 10px 15px;
+            font-size: 18px;
+            border-radius: 10px;
+            border: 2px solid #7dd3fc;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            outline: none;
+        }
+
+        .nameInput input::placeholder {
+            color: #94a3b8;
+        }
+
+        .closeButton {
+            margin-top: 20px;
+            padding: 12px 40px;
+            font-size: 20px;
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        }
+
+        .floatingBubble {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, rgba(125,211,252,0.4), rgba(125,211,252,0.1));
+            animation: float 6s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) translateX(0); }
+            50% { transform: translateY(-30px) translateX(20px); }
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
+        
+        <div id="startMenu">
+            <div class="floatingBubble" style="width: 80px; height: 80px; top: 10%; left: 10%; animation-delay: 0s;"></div>
+            <div class="floatingBubble" style="width: 60px; height: 60px; top: 20%; right: 15%; animation-delay: 1s;"></div>
+            <div class="floatingBubble" style="width: 100px; height: 100px; bottom: 15%; left: 20%; animation-delay: 2s;"></div>
+            <div class="floatingBubble" style="width: 70px; height: 70px; bottom: 25%; right: 10%; animation-delay: 1.5s;"></div>
+            
+            <h1>🫧 Slime Bubble Pop 🫧</h1>
+            <p class="subtitle">Choose your slime and start the adventure!</p>
+            
+            <div class="slimeSelection">
+                <h3>Select Your Slime Color:</h3>
+                <div class="slimeOptions">
+                    <div class="slimeOption selected" data-color="blue" onclick="selectSlime('blue')">
+                        <canvas class="slimePreview" width="60" height="50"></canvas>
+                    </div>
+                    <div class="slimeOption" data-color="pink" onclick="selectSlime('pink')">
+                        <canvas class="slimePreview" width="60" height="50"></canvas>
+                    </div>
+                    <div class="slimeOption" data-color="green" onclick="selectSlime('green')">
+                        <canvas class="slimePreview" width="60" height="50"></canvas>
+                    </div>
+                    <div class="slimeOption" data-color="purple" onclick="selectSlime('purple')">
+                        <canvas class="slimePreview" width="60" height="50"></canvas>
+                    </div>
+                    <div class="slimeOption" data-color="orange" onclick="selectSlime('orange')">
+                        <canvas class="slimePreview" width="60" height="50"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <strong>Controls:</strong><br>
+                🖱️ Mouse/Touch - Move to control slime<br>
+                ⌨️ Arrow Keys or A/D - Keyboard control<br>
+                🎯 Catch blue bubbles, avoid red ones!<br>
+                ⭐ Collect power-ups for special abilities!
+            </div>
+
+            <div class="audioControls">
+                <button class="audioToggle" id="musicToggle" onclick="toggleMusic()">🎵 Music: ON</button>
+                <button class="audioToggle" id="sfxToggle" onclick="toggleSFX()">🔊 SFX: ON</button>
+            </div>
+
+            <button onclick="startGame()">Start Adventure!</button>
+            <button onclick="showStore()" style="margin-top: 10px; background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);">🏪 Store</button>
+            <button onclick="showLeaderboard()" style="margin-top: 10px; background: linear-gradient(135deg, #4ecdc4 0%, #44a6a8 100%);">🏆 Leaderboard</button>
+        </div>
+        
+        <div id="gameTitle">🫧 Slime Bubble Pop</div>
+        
+        <div id="ui">
+            <div class="stat">Score: <span id="score">0</span></div>
+            <div class="stat">Level: <span id="level">1</span></div>
+            <div class="stat">Lives: <span id="lives">❤️❤️❤️</span></div>
+        </div>
+        
+        <div id="combo"></div>
+        <div id="powerupIndicator"></div>
+        
+        <div id="gameOver">
+            <h2>Game Over!</h2>
+            <p>Final Score: <span id="finalScore">0</span></p>
+            <p>Level Reached: <span id="finalLevel">1</span></p>
+            <p>Best Combo: <span id="bestCombo">0</span>x</p>
+            <p>Coins Earned: <span id="coinsEarned">0</span> 🪙</p>
+            <div class="gameOverButtons">
+                <button onclick="restartGame()">Play Again</button>
+                <button onclick="showMainMenu()">Main Menu</button>
+            </div>
+        </div>
+
+        <div id="store">
+            <h2>🏪 Store</h2>
+            <div class="coinDisplay">
+                Your Coins: <span id="storeCoins">0</span> 🪙
+            </div>
+            <div id="storeItems"></div>
+            <button class="closeButton" onclick="closeStore()">Close</button>
+        </div>
+
+        <div id="leaderboard">
+            <h2>🏆 Leaderboard</h2>
+            <div class="leaderboardTable" id="leaderboardTable"></div>
+            <button class="closeButton" onclick="closeLeaderboard()">Close</button>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let score = 0;
+        let level = 1;
+        let lives = 3;
+        let gameRunning = false;
+        let bubbles = [];
+        let particles = [];
+        let powerups = [];
+        let obstacles = [];
+        let mouseX = canvas.width / 2;
+        let mouseY = canvas.height - 100;
+        let selectedSlimeColor = 'blue';
+        let keys = {};
+        let combo = 0;
+        let bestCombo = 0;
+        let comboTimer = 0;
+        let activePowerup = null;
+        let powerupTimer = 0;
+        let bgOffset = 0;
+        let musicEnabled = true;
+        let sfxEnabled = true;
+        let audioContext = null;
+        let totalCoins = 0;
+        let ownedItems = [];
+        let playerName = '';
+        let leaderboardData = [];
+        let gameData = { coins: 0, items: [], leaderboard: [] };
+        let storageAvailable = false;
+
+        const storeItemsData = [
+            { id: 'extraLife', name: 'Extra Starting Life', price: 100, description: 'Start with 4 lives instead of 3', icon: '❤️' },
+            { id: 'scoreBoost', name: 'Score Multiplier', price: 150, description: 'Earn 1.5x more points', icon: '⭐' },
+            { id: 'slowerBubbles', name: 'Bubble Slower', price: 120, description: 'Bubbles fall 20% slower', icon: '⏱️' },
+            { id: 'magnetUpgrade', name: 'Magnet Upgrade', price: 200, description: 'Magnet powerup lasts 2x longer', icon: '🧲' },
+            { id: 'shieldUpgrade', name: 'Shield Upgrade', price: 200, description: 'Shield powerup lasts 2x longer', icon: '🛡️' },
+            { id: 'rarePowerups', name: 'Better Powerups', price: 250, description: 'Powerups spawn more frequently', icon: '✨' }
+        ];
+
+        const slimeColors = {
+            blue: { primary: '#7dd3fc', secondary: '#38bdf8', tertiary: '#0284c7', drop: '#60a5fa' },
+            pink: { primary: '#f9a8d4', secondary: '#f472b6', tertiary: '#ec4899', drop: '#f9a8d4' },
+            green: { primary: '#86efac', secondary: '#4ade80', tertiary: '#22c55e', drop: '#86efac' },
+            purple: { primary: '#c084fc', secondary: '#a855f7', tertiary: '#9333ea', drop: '#c084fc' },
+            orange: { primary: '#fdba74', secondary: '#fb923c', tertiary: '#f97316', drop: '#fdba74' }
+        };
+
+        const slime = {
+            x: canvas.width / 2,
+            y: canvas.height - 80,
+            width: 60,
+            height: 50,
+            speed: 8,
+            targetX: canvas.width / 2,
+            startingLives: 3
+        };
+
+        class Bubble {
+            constructor(x, y, speed, type = 'good') {
+                this.x = x;
+                this.y = y;
+                this.radius = 15 + Math.random() * 15;
+                this.speed = speed;
+                this.type = type;
+                this.wobble = Math.random() * Math.PI * 2;
+                this.wobbleSpeed = 0.05 + Math.random() * 0.05;
+                this.color = type === 'good' ? 
+                    `hsl(${180 + Math.random() * 60}, 80%, 60%)` : 
+                    `hsl(${0 + Math.random() * 30}, 80%, 50%)`;
+                this.points = type === 'good' ? 10 : 0;
+            }
+
+            update() {
+                let speedMod = activePowerup === 'slowmo' ? 0.5 : 1;
+                if (ownedItems.includes('slowerBubbles')) speedMod *= 0.8;
+                
+                this.y += this.speed * speedMod;
+                this.wobble += this.wobbleSpeed;
+                this.x += Math.sin(this.wobble) * 2;
+            }
+
+            draw() {
+                const gradient = ctx.createRadialGradient(
+                    this.x - this.radius * 0.3, 
+                    this.y - this.radius * 0.3, 
+                    this.radius * 0.1,
+                    this.x, 
+                    this.y, 
+                    this.radius
+                );
+                gradient.addColorStop(0, this.type === 'good' ? 'rgba(255,255,255,0.8)' : 'rgba(255,200,200,0.8)');
+                gradient.addColorStop(0.5, this.color);
+                gradient.addColorStop(1, this.type === 'good' ? 'rgba(100,200,255,0.6)' : 'rgba(200,50,50,0.6)');
+
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = gradient;
+                ctx.fill();
+
+                ctx.beginPath();
+                ctx.arc(this.x - this.radius * 0.4, this.y - this.radius * 0.4, this.radius * 0.3, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255,255,255,0.4)';
+                ctx.fill();
+            }
+        }
+
+        class Powerup {
+            constructor(x, y, type) {
+                this.x = x;
+                this.y = y;
+                this.radius = 20;
+                this.speed = 2;
+                this.type = type;
+                this.rotation = 0;
+                this.icons = {
+                    shield: '🛡️',
+                    slowmo: '⏰',
+                    magnet: '🧲',
+                    double: '✨',
+                    life: '❤️'
+                };
+            }
+
+            update() {
+                this.y += this.speed;
+                this.rotation += 0.05;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation);
+                
+                const gradient = ctx.createRadialGradient(0, 0, 5, 0, 0, this.radius);
+                gradient.addColorStop(0, 'rgba(251,191,36,0.8)');
+                gradient.addColorStop(1, 'rgba(245,158,11,0.4)');
+                
+                ctx.beginPath();
+                ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = gradient;
+                ctx.fill();
+                ctx.strokeStyle = '#fbbf24';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+                
+                ctx.font = '24px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(this.icons[this.type], 0, 0);
+                
+                ctx.restore();
+            }
+        }
+
+        class Obstacle {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.width = 80;
+                this.height = 20;
+                this.speed = 2 + level * 0.2;
+            }
+
+            update() {
+                this.y += this.speed;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = 'rgba(239,68,68,0.5)';
+                
+                const gradient = ctx.createLinearGradient(this.x, this.y, this.x, this.y + this.height);
+                gradient.addColorStop(0, '#ef4444');
+                gradient.addColorStop(1, '#dc2626');
+                
+                ctx.fillStyle = gradient;
+                ctx.fillRect(this.x, this.y, this.width, this.height);
+                
+                ctx.fillStyle = '#fca5a5';
+                ctx.fillRect(this.x + 5, this.y + 5, this.width - 10, this.height - 10);
+                
+                ctx.restore();
+            }
+
+            checkCollision() {
+                if (activePowerup === 'shield') return false;
+                
+                return slime.x + slime.width / 2 > this.x &&
+                       slime.x - slime.width / 2 < this.x + this.width &&
+                       slime.y + slime.height / 2 > this.y &&
+                       slime.y - slime.height / 2 < this.y + this.height;
+            }
+        }
+
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.vx = (Math.random() - 0.5) * 8;
+                this.vy = (Math.random() - 0.5) * 8;
+                this.life = 1;
+                this.color = color;
+                this.size = 3 + Math.random() * 4;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.vy += 0.2;
+                this.life -= 0.02;
+            }
+
+            draw() {
+                ctx.globalAlpha = this.life;
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.globalAlpha = 1;
+            }
+        }
+
+        function initAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playSound(frequency, duration, type = 'sine') {
+            if (!sfxEnabled || !audioContext) return;
+            
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.value = frequency;
+            oscillator.type = type;
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + duration);
+        }
+
+        function playBubblePop() {
+            playSound(800, 0.1, 'sine');
+            setTimeout(() => playSound(1200, 0.05, 'sine'), 50);
+        }
+
+        function playPowerupSound() {
+            playSound(523, 0.1, 'square');
+            setTimeout(() => playSound(659, 0.1, 'square'), 100);
+            setTimeout(() => playSound(784, 0.15, 'square'), 200);
+        }
+
+        function playHitSound() {
+            playSound(100, 0.2, 'sawtooth');
+        }
+
+        function playComboSound(comboLevel) {
+            const baseFreq = 400 + (comboLevel * 50);
+            playSound(baseFreq, 0.15, 'triangle');
+        }
+
+        function playBackgroundMusic() {
+            if (!musicEnabled || !audioContext) return;
+            
+            const notes = [523.25, 587.33, 659.25, 698.46, 783.99, 880.00];
+            let noteIndex = 0;
+            
+            function playNote() {
+                if (!musicEnabled) return;
+                
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.value = notes[noteIndex % notes.length];
+                oscillator.type = 'sine';
+                
+                gainNode.gain.setValueAtTime(0.05, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.4);
+                
+                noteIndex++;
+                if (gameRunning) {
+                    setTimeout(playNote, 500);
+                }
+            }
+            
+            playNote();
+        }
+
+        function toggleMusic() {
+            musicEnabled = !musicEnabled;
+            const btn = document.getElementById('musicToggle');
+            btn.textContent = musicEnabled ? '🎵 Music: ON' : '🎵 Music: OFF';
+            btn.classList.toggle('muted');
+        }
+
+        function toggleSFX() {
+            sfxEnabled = !sfxEnabled;
+            const btn = document.getElementById('sfxToggle');
+            btn.textContent = sfxEnabled ? '🔊 SFX: ON' : '🔊 SFX: OFF';
+            btn.classList.toggle('muted');
+        }
+
+        function drawSlime() {
+            const squish = Math.sin(Date.now() * 0.005) * 3;
+            const colors = slimeColors[selectedSlimeColor];
+            
+            if (activePowerup === 'shield') {
+                ctx.strokeStyle = 'rgba(125,211,252,0.5)';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.arc(slime.x, slime.y, slime.width / 2 + 15, 0, Math.PI * 2);
+                ctx.stroke();
+                
+                for (let i = 0; i < 8; i++) {
+                    const angle = (Date.now() / 1000 + i * Math.PI / 4) % (Math.PI * 2);
+                    const x = slime.x + Math.cos(angle) * (slime.width / 2 + 15);
+                    const y = slime.y + Math.sin(angle) * (slime.width / 2 + 15);
+                    ctx.fillStyle = 'rgba(125,211,252,0.6)';
+                    ctx.beginPath();
+                    ctx.arc(x, y, 3, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+            
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = `${colors.primary}80`;
+            
+            const gradient = ctx.createRadialGradient(
+                slime.x, slime.y - 10, 10,
+                slime.x, slime.y, slime.width / 2
+            );
+            gradient.addColorStop(0, colors.primary);
+            gradient.addColorStop(0.5, colors.secondary);
+            gradient.addColorStop(1, colors.tertiary);
+
+            ctx.beginPath();
+            ctx.ellipse(slime.x, slime.y + 10, slime.width / 2 + squish, slime.height / 2 - squish, 0, 0, Math.PI * 2);
+            ctx.fillStyle = gradient;
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.moveTo(slime.x - 5, slime.y - 15);
+            ctx.bezierCurveTo(slime.x - 5, slime.y - 25, slime.x + 5, slime.y - 25, slime.x + 5, slime.y - 15);
+            ctx.bezierCurveTo(slime.x + 10, slime.y - 20, slime.x + 8, slime.y - 8, slime.x, slime.y - 10);
+            ctx.fillStyle = colors.drop;
+            ctx.fill();
+
+            ctx.shadowBlur = 0;
+
+            const eyeY = slime.y - 5;
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.arc(slime.x - 12, eyeY, 8, 0, Math.PI * 2);
+            ctx.arc(slime.x + 12, eyeY, 8, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#1e293b';
+            ctx.beginPath();
+            ctx.arc(slime.x - 12, eyeY, 5, 0, Math.PI * 2);
+            ctx.arc(slime.x + 12, eyeY, 5, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.arc(slime.x - 10, eyeY - 2, 2, 0, Math.PI * 2);
+            ctx.arc(slime.x + 14, eyeY - 2, 2, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.strokeStyle = '#f472b6';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(slime.x, eyeY + 8, 8, 0.2, Math.PI - 0.2);
+            ctx.stroke();
+        }
+
+        function drawSlimePreview(canvas, color) {
+            const ctx = canvas.getContext('2d');
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const colors = slimeColors[color];
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const gradient = ctx.createRadialGradient(
+                centerX, centerY - 5, 5,
+                centerX, centerY, 20
+            );
+            gradient.addColorStop(0, colors.primary);
+            gradient.addColorStop(0.5, colors.secondary);
+            gradient.addColorStop(1, colors.tertiary);
+
+            ctx.beginPath();
+            ctx.ellipse(centerX, centerY + 5, 25, 20, 0, 0, Math.PI * 2);
+            ctx.fillStyle = gradient;
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.moveTo(centerX - 3, centerY - 8);
+            ctx.bezierCurveTo(centerX - 3, centerY - 13, centerX + 3, centerY - 13, centerX + 3, centerY - 8);
+            ctx.bezierCurveTo(centerX + 5, centerY - 10, centerX + 4, centerY - 5, centerX, centerY - 6);
+            ctx.fillStyle = colors.drop;
+            ctx.fill();
+
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.arc(centerX - 8, centerY, 4, 0, Math.PI * 2);
+            ctx.arc(centerX + 8, centerY, 4, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#1e293b';
+            ctx.beginPath();
+            ctx.arc(centerX - 8, centerY, 2.5, 0, Math.PI * 2);
+            ctx.arc(centerX + 8, centerY, 2.5, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        function spawnBubble() {
+            const x = Math.random() * (canvas.width - 60) + 30;
+            const speed = 1 + level * 0.3;
+            const type = Math.random() > 0.25 ? 'good' : 'bad';
+            bubbles.push(new Bubble(x, -30, speed, type));
+        }
+
+        function spawnPowerup() {
+            const types = ['shield', 'slowmo', 'magnet', 'double', 'life'];
+            const type = types[Math.floor(Math.random() * types.length)];
+            const x = Math.random() * (canvas.width - 60) + 30;
+            powerups.push(new Powerup(x, -30, type));
+        }
+
+        function spawnObstacle() {
+            const x = Math.random() * (canvas.width - 100) + 50;
+            obstacles.push(new Obstacle(x, -30));
+        }
+
+        function activatePowerup(type) {
+            activePowerup = type;
+            let duration = 300;
+            
+            if (type === 'magnet' && ownedItems.includes('magnetUpgrade')) duration *= 2;
+            if (type === 'shield' && ownedItems.includes('shieldUpgrade')) duration *= 2;
+            
+            powerupTimer = duration;
+            
+            const indicator = document.getElementById('powerupIndicator');
+            const messages = {
+                shield: '🛡️ Shield Active!',
+                slowmo: '⏰ Slow Motion!',
+                magnet: '🧲 Magnet Power!',
+                double: '✨ Double Points!',
+                life: '❤️ Extra Life!'
+            };
+            
+            if (type === 'life') {
+                lives = Math.min(lives + 1, 5);
+                powerupTimer = 0;
+                activePowerup = null;
+            } else {
+                indicator.textContent = messages[type];
+                indicator.style.display = 'block';
+            }
+            
+            playPowerupSound();
+        }
+
+        function checkCollision(bubble) {
+            let range = bubble.radius + slime.width / 2;
+            if (activePowerup === 'magnet') range += 50;
+            
+            const dx = bubble.x - slime.x;
+            const dy = bubble.y - slime.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            return distance < range;
+        }
+
+        function createParticles(x, y, color, count = 15) {
+            for (let i = 0; i < count; i++) {
+                particles.push(new Particle(x, y, color));
+            }
+        }
+
+        function showCombo() {
+            if (combo > 1) {
+                const comboEl = document.getElementById('combo');
+                comboEl.textContent = `${combo}x COMBO!`;
+                comboEl.style.display = 'block';
+                
+                setTimeout(() => {
+                    comboEl.style.display = 'none';
+                }, 500);
+                
+                playComboSound(combo);
+            }
+        }
+
+        function updateGame() {
+            if (!gameRunning) return;
+
+            if (keys['ArrowLeft'] || keys['a'] || keys['A']) {
+                slime.targetX = Math.max(slime.width / 2, slime.targetX - slime.speed);
+            }
+            if (keys['ArrowRight'] || keys['d'] || keys['D']) {
+                slime.targetX = Math.min(canvas.width - slime.width / 2, slime.targetX + slime.speed);
+            }
+
+            slime.x += (slime.targetX - slime.x) * 0.15;
+
+            bubbles.forEach((bubble, index) => {
+                bubble.update();
+
+                if (checkCollision(bubble)) {
+                    if (bubble.type === 'good') {
+                        let points = bubble.points;
+                        if (activePowerup === 'double') points *= 2;
+                        if (ownedItems.includes('scoreBoost')) points = Math.floor(points * 1.5);
+                        
+                        score += points;
+                        totalCoins += Math.floor(points / 10);
+                        combo++;
+                        comboTimer = 120;
+                        
+                        if (combo > bestCombo) bestCombo = combo;
+                        
+                        showCombo();
+                        createParticles(bubble.x, bubble.y, bubble.color, 20);
+                        playBubblePop();
+                    } else {
+                        if (activePowerup !== 'shield') {
+                            lives--;
+                            playHitSound();
+                            if (lives <= 0) {
+                                endGame();
+                            }
+                        }
+                        combo = 0;
+                        createParticles(bubble.x, bubble.y, '#ef4444', 25);
+                    }
+                    bubbles.splice(index, 1);
+                }
+
+                if (bubble.y > canvas.height + bubble.radius) {
+                    bubbles.splice(index, 1);
+                    if (bubble.type === 'good') {
+                        lives--;
+                        combo = 0;
+                        if (lives <= 0) {
+                            endGame();
+                        }
+                    }
+                }
+            });
+
+            powerups.forEach((powerup, index) => {
+                powerup.update();
+
+                const dx = powerup.x - slime.x;
+                const dy = powerup.y - slime.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+
+                if (distance < powerup.radius + slime.width / 2) {
+                    activatePowerup(powerup.type);
+                    createParticles(powerup.x, powerup.y, '#fbbf24', 30);
+                    powerups.splice(index, 1);
+                }
+
+                if (powerup.y > canvas.height + powerup.radius) {
+                    powerups.splice(index, 1);
+                }
+            });
+
+            obstacles.forEach((obstacle, index) => {
+                obstacle.update();
+
+                if (obstacle.checkCollision()) {
+                    lives--;
+                    playHitSound();
+                    combo = 0;
+                    createParticles(obstacle.x + obstacle.width / 2, obstacle.y + obstacle.height / 2, '#ef4444', 30);
+                    obstacles.splice(index, 1);
+                    
+                    if (lives <= 0) {
+                        endGame();
+                    }
+                }
+
+                if (obstacle.y > canvas.height) {
+                    obstacles.splice(index, 1);
+                }
+            });
+
+            particles.forEach((particle, index) => {
+                particle.update();
+                if (particle.life <= 0) {
+                    particles.splice(index, 1);
+                }
+            });
+
+            if (comboTimer > 0) {
+                comboTimer--;
+            } else {
+                combo = 0;
+            }
+
+            if (powerupTimer > 0) {
+                powerupTimer--;
+            } else if (activePowerup && activePowerup !== 'life') {
+                activePowerup = null;
+                document.getElementById('powerupIndicator').style.display = 'none';
+            }
+
+            if (score > 0 && score % 100 === 0 && bubbles.length < 15) {
+                level = Math.floor(score / 100) + 1;
+            }
+
+            bgOffset += 0.5;
+
+            updateUI();
+        }
+
+        function drawBackground() {
+            ctx.fillStyle = '#1a1a2e';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            for (let i = 0; i < 100; i++) {
+                const x = (i * 137.5) % canvas.width;
+                const y = ((i * 97.3 + bgOffset) % canvas.height);
+                const size = 1 + (i % 3);
+                ctx.fillStyle = `rgba(255,255,255,${0.1 + (i % 3) * 0.05})`;
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            gradient.addColorStop(0, 'rgba(56,189,248,0.05)');
+            gradient.addColorStop(0.5, 'rgba(139,92,246,0.05)');
+            gradient.addColorStop(1, 'rgba(236,72,153,0.05)');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function drawGame() {
+            drawBackground();
+            particles.forEach(particle => particle.draw());
+            obstacles.forEach(obstacle => obstacle.draw());
+            bubbles.forEach(bubble => bubble.draw());
+            powerups.forEach(powerup => powerup.draw());
+            drawSlime();
+        }
+
+        function gameLoop() {
+            updateGame();
+            drawGame();
+            requestAnimationFrame(gameLoop);
+        }
+
+        function updateUI() {
+            document.getElementById('score').textContent = score;
+            document.getElementById('level').textContent = level;
+            document.getElementById('lives').textContent = '❤️'.repeat(lives);
+        }
+
+        async function endGame() {
+            gameRunning = false;
+            const coinsEarned = Math.floor(score / 10);
+            document.getElementById('finalScore').textContent = score;
+            document.getElementById('finalLevel').textContent = level;
+            document.getElementById('bestCombo').textContent = bestCombo;
+            document.getElementById('coinsEarned').textContent = coinsEarned;
+            document.getElementById('gameOver').style.display = 'block';
+            
+            try {
+                await saveToStorage();
+            } catch (error) {
+                console.error('Error saving game data:', error);
+            }
+            
+            // Show name input if player achieved a score
+            if (score > 0) {
+                setTimeout(() => {
+                    try {
+                        const shouldSave = confirm(`Great job! You scored ${score} points!\n\nWould you like to save your score to the leaderboard?`);
+                        if (shouldSave) {
+                            const name = prompt('Enter your name for the leaderboard:', playerName || 'Player');
+                            if (name && name.trim()) {
+                                playerName = name.trim();
+                                saveScoreToLeaderboard(playerName, score);
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Error with score prompt:', error);
+                    }
+                }, 500);
+            }
+        }
+
+        function restartGame() {
+            score = 0;
+            level = 1;
+            lives = slime.startingLives;
+            combo = 0;
+            bestCombo = 0;
+            bubbles = [];
+            particles = [];
+            powerups = [];
+            obstacles = [];
+            activePowerup = null;
+            powerupTimer = 0;
+            gameRunning = true;
+            document.getElementById('gameOver').style.display = 'none';
+            updateUI();
+            
+            if (musicEnabled) {
+                playBackgroundMusic();
+            }
+        }
+
+        function showMainMenu() {
+            document.getElementById('gameOver').style.display = 'none';
+            document.getElementById('startMenu').style.display = 'flex';
+            document.getElementById('gameTitle').classList.remove('playing');
+            gameRunning = false;
+            bubbles = [];
+            particles = [];
+            powerups = [];
+            obstacles = [];
+        }
+
+        async function checkStorageAvailability() {
+            try {
+                if (typeof window.storage !== 'undefined') {
+                    await window.storage.get('test-key');
+                    storageAvailable = true;
+                    console.log('Storage is available');
+                } else {
+                    storageAvailable = false;
+                    console.log('Storage not available, using memory only');
+                }
+            } catch (error) {
+                storageAvailable = false;
+                console.log('Storage not available, using memory only');
+            }
+        }
+
+        async function saveToStorage() {
+            const coinsToAdd = Math.floor(score / 10);
+            totalCoins += coinsToAdd;
+            gameData.coins = totalCoins;
+            gameData.items = ownedItems;
+            
+            if (!storageAvailable) {
+                console.log('Using memory storage only');
+                return;
+            }
+            
+            try {
+                await window.storage.set('slime-game-data', JSON.stringify(gameData));
+            } catch (error) {
+                console.log('Could not save to storage:', error.message);
+            }
+        }
+
+        async function loadFromStorage() {
+            if (!storageAvailable) {
+                console.log('Storage not available, starting fresh');
+                return;
+            }
+            
+            try {
+                const savedData = await window.storage.get('slime-game-data');
+                if (savedData) {
+                    gameData = JSON.parse(savedData.value);
+                    totalCoins = gameData.coins || 0;
+                    ownedItems = gameData.items || [];
+                    
+                    if (ownedItems.includes('extraLife')) {
+                        slime.startingLives = 4;
+                    }
+                }
+            } catch (error) {
+                console.log('Could not load from storage:', error.message);
+            }
+        }
+
+        async function showStore() {
+            document.getElementById('startMenu').style.display = 'none';
+            document.getElementById('store').style.display = 'block';
+            document.getElementById('storeCoins').textContent = totalCoins;
+            
+            const storeItemsContainer = document.getElementById('storeItems');
+            storeItemsContainer.innerHTML = '';
+            
+            storeItemsData.forEach(item => {
+                const owned = ownedItems.includes(item.id);
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'storeItem' + (owned ? ' owned' : '');
+                itemDiv.innerHTML = `
+                    <div class="itemInfo">
+                        <h3>${item.icon} ${item.name}</h3>
+                        <p>${item.description}</p>
+                    </div>
+                    <div class="itemPrice">
+                        <span class="coins">${item.price} 🪙</span>
+                        <button onclick="buyItem('${item.id}', ${item.price})" ${owned || totalCoins < item.price ? 'disabled' : ''}>
+                            ${owned ? 'Owned' : 'Buy'}
+                        </button>
+                    </div>
+                `;
+                storeItemsContainer.appendChild(itemDiv);
+            });
+        }
+
+        async function buyItem(itemId, price) {
+            if (totalCoins >= price && !ownedItems.includes(itemId)) {
+                totalCoins -= price;
+                ownedItems.push(itemId);
+                gameData.coins = totalCoins;
+                gameData.items = ownedItems;
+                
+                if (itemId === 'extraLife') {
+                    slime.startingLives = 4;
+                    lives = 4;
+                }
+                
+                if (storageAvailable) {
+                    try {
+                        await window.storage.set('slime-game-data', JSON.stringify(gameData));
+                    } catch (error) {
+                        console.log('Could not save purchase:', error.message);
+                    }
+                }
+                
+                playPowerupSound();
+                showStore();
+            }
+        }
+
+        function closeStore() {
+            document.getElementById('store').style.display = 'none';
+            document.getElementById('startMenu').style.display = 'flex';
+        }
+
+        async function showLeaderboard() {
+            document.getElementById('startMenu').style.display = 'none';
+            document.getElementById('leaderboard').style.display = 'block';
+            
+            if (!storageAvailable) {
+                console.log('Using in-memory leaderboard');
+                displayLeaderboard();
+                return;
+            }
+            
+            try {
+                const savedData = await window.storage.get('slime-game-leaderboard', true);
+                if (savedData) {
+                    leaderboardData = JSON.parse(savedData.value);
+                } else {
+                    leaderboardData = gameData.leaderboard || [];
+                }
+            } catch (error) {
+                console.error('Error loading leaderboard:', error);
+                leaderboardData = gameData.leaderboard || [];
+            }
+            
+            displayLeaderboard();
+        }
+
+        function displayLeaderboard() {
+            const table = document.getElementById('leaderboardTable');
+            table.innerHTML = '';
+            
+            leaderboardData.sort((a, b) => b.score - a.score);
+            leaderboardData = leaderboardData.slice(0, 10);
+            
+            if (leaderboardData.length === 0) {
+                table.innerHTML = '<p style="text-align: center; color: #94a3b8;">No scores yet. Be the first!</p>';
+                return;
+            }
+            
+            leaderboardData.forEach((entry, index) => {
+                const entryDiv = document.createElement('div');
+                entryDiv.className = 'leaderboardEntry';
+                
+                let rankClass = '';
+                if (index === 0) rankClass = 'gold';
+                else if (index === 1) rankClass = 'silver';
+                else if (index === 2) rankClass = 'bronze';
+                
+                entryDiv.innerHTML = `
+                    <div class="leaderboardRank ${rankClass}">#${index + 1}</div>
+                    <div class="leaderboardName">${entry.name}</div>
+                    <div class="leaderboardScore">${entry.score}</div>
+                `;
+                table.appendChild(entryDiv);
+            });
+        }
+
+        async function saveScoreToLeaderboard(name, playerScore) {
+            // Add to in-memory leaderboard
+            leaderboardData.push({ 
+                name: name, 
+                score: playerScore, 
+                timestamp: Date.now() 
+            });
+            
+            // Sort and keep top 100
+            leaderboardData.sort((a, b) => b.score - a.score);
+            leaderboardData = leaderboardData.slice(0, 100);
+            
+            gameData.leaderboard = leaderboardData;
+            
+            if (!storageAvailable) {
+                const rank = leaderboardData.findIndex(e => e.score === playerScore && e.name === name) + 1;
+                alert(`Score saved in session! You rank #${rank}!\n\nNote: Scores are not persistent in this session.`);
+                return;
+            }
+            
+            try {
+                await window.storage.set('slime-game-leaderboard', JSON.stringify(leaderboardData), true);
+                const rank = leaderboardData.findIndex(e => e.score === playerScore && e.name === name) + 1;
+                alert(`Score saved globally! You rank #${rank} on the worldwide leaderboard!`);
+            } catch (error) {
+                console.error('Error saving to leaderboard:', error);
+                const rank = leaderboardData.findIndex(e => e.score === playerScore && e.name === name) + 1;
+                alert(`Score saved in session! You rank #${rank}!\n\nNote: Could not save to global leaderboard.`);
+            }
+        }
+
+        function closeLeaderboard() {
+            document.getElementById('leaderboard').style.display = 'none';
+            document.getElementById('startMenu').style.display = 'flex';
+        }
+
+        function selectSlime(color) {
+            selectedSlimeColor = color;
+            document.querySelectorAll('.slimeOption').forEach(option => {
+                option.classList.remove('selected');
+            });
+            document.querySelector(`[data-color="${color}"]`).classList.add('selected');
+            playSound(600, 0.1, 'sine');
+        }
+
+        function startGame() {
+            document.getElementById('startMenu').style.display = 'none';
+            document.getElementById('gameTitle').classList.add('playing');
+            gameRunning = true;
+            lives = slime.startingLives;
+            score = 0;
+            level = 1;
+            combo = 0;
+            initAudio();
+            
+            if (musicEnabled) {
+                playBackgroundMusic();
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            keys[e.key] = true;
+        });
+
+        document.addEventListener('keyup', (e) => {
+            keys[e.key] = false;
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            slime.targetX = e.clientX - rect.left;
+        });
+
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const touch = e.touches[0];
+            slime.targetX = touch.clientX - rect.left;
+        });
+
+        setInterval(() => {
+            if (gameRunning) {
+                spawnBubble();
+            }
+        }, 1500 / Math.max(1, level * 0.8));
+
+        setInterval(() => {
+            if (gameRunning && Math.random() < 0.3) {
+                const spawnChance = ownedItems.includes('rarePowerups') ? 0.5 : 0.3;
+                if (Math.random() < spawnChance) {
+                    spawnPowerup();
+                }
+            }
+        }, 5000);
+
+        setInterval(() => {
+            if (gameRunning && level > 2 && Math.random() < 0.4) {
+                spawnObstacle();
+            }
+        }, 4000);
+
+        document.querySelectorAll('.slimePreview').forEach((canvas, index) => {
+            const colors = ['blue', 'pink', 'green', 'purple', 'orange'];
+            drawSlimePreview(canvas, colors[index]);
+        });
+
+        // Initialize storage and load data
+        checkStorageAvailability().then(() => {
+            loadFromStorage();
+            updateUI();
+        });
+        
+        gameLoop();
+    </script>
+</body>
+</html>
