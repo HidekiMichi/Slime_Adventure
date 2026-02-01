@@ -2,8 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Slime Bubble Pop Adventure</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>Slime Bubble Pop</title>
     <style>
         * {
             margin: 0;
@@ -23,6 +26,7 @@
             position: fixed;
             width: 100%;
             height: 100%;
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
         }
 
         #gameContainer {
@@ -37,7 +41,6 @@
             height: 100%;
         }
 
-        /* Responsive canvas container */
         #canvasContainer {
             position: relative;
             width: 100%;
@@ -57,28 +60,116 @@
 
         #ui {
             position: absolute;
-            top: 10px;
-            left: 10px;
-            right: 10px;
+            top: max(15px, env(safe-area-inset-top));
+            left: max(15px, env(safe-area-inset-left));
+            right: max(15px, env(safe-area-inset-right));
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: flex-start;
             flex-wrap: wrap;
             gap: 8px;
             color: white;
-            font-size: clamp(12px, 3vw, 18px);
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            font-size: clamp(14px, 3.5vw, 20px);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.9);
             pointer-events: none;
             z-index: 10;
+            padding-top: 5px;
         }
 
         .stat {
-            background: rgba(0,0,0,0.3);
-            padding: clamp(4px, 1vw, 8px) clamp(8px, 2vw, 15px);
+            background: rgba(0,0,0,0.85);
+            padding: clamp(6px, 1.5vw, 10px) clamp(12px, 2.5vw, 16px);
             border-radius: 12px;
             backdrop-filter: blur(10px);
             white-space: nowrap;
-            font-size: clamp(11px, 2.5vw, 16px);
+            font-size: clamp(14px, 3vw, 18px);
+            font-weight: bold;
+            border: 2px solid rgba(125,211,252,0.4);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+        }
+
+        #bossHealthBar {
+            position: absolute;
+            top: max(80px, calc(env(safe-area-inset-top) + 65px));
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            max-width: 400px;
+            background: rgba(0,0,0,0.9);
+            border-radius: 10px;
+            padding: 10px;
+            display: none;
+            z-index: 15;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+        }
+
+        .boss-bar-fill {
+            height: 18px;
+            background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%);
+            border-radius: 5px;
+            transition: width 0.3s;
+        }
+
+        .boss-bar-text {
+            color: white;
+            font-weight: bold;
+            font-size: clamp(12px, 2.5vw, 14px);
+            text-align: center;
+            display: block;
+            margin-top: 5px;
+        }
+
+        #powerupIndicator {
+            position: absolute;
+            top: max(140px, calc(env(safe-area-inset-top) + 125px));
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(102,126,234,0.95);
+            padding: 15px 30px;
+            border-radius: 15px;
+            color: white;
+            font-weight: bold;
+            font-size: clamp(16px, 3vw, 20px);
+            display: none;
+            z-index: 15;
+            animation: pulse 1s infinite;
+        }
+
+        #combo {
+            position: absolute;
+            top: 50%;
+            right: max(20px, env(safe-area-inset-right));
+            transform: translateY(-50%);
+            color: #fbbf24;
+            font-size: clamp(20px, 4.5vw, 32px);
+            font-weight: bold;
+            text-shadow: 2px 2px 6px rgba(0,0,0,0.9);
+            display: none;
+            animation: comboPopIn 0.3s ease-out;
+            z-index: 15;
+            pointer-events: none;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: translateX(-50%) scale(1); }
+            50% { transform: translateX(-50%) scale(1.05); }
+        }
+
+        @keyframes comboPopIn {
+            0% { transform: translateY(-50%) scale(0); }
+            50% { transform: translateY(-50%) scale(1.2); }
+            100% { transform: translateY(-50%) scale(1); }
+        }
+
+        @keyframes popIn {
+            0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+            50% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+
+        @keyframes fadeOut {
+            0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
         }
 
         #startMenu {
@@ -98,13 +189,14 @@
         }
 
         #startMenu h1 {
-            font-size: clamp(24px, 6vw, 48px);
+            font-size: clamp(32px, 8vw, 56px);
             color: #7dd3fc;
-            text-shadow: 0 0 20px rgba(125,211,252,0.5);
-            margin-bottom: clamp(5px, 1vh, 10px);
-            margin-top: clamp(5px, 1vh, 10px);
+            text-shadow: 0 0 30px rgba(125,211,252,0.6);
+            margin-bottom: clamp(10px, 2vh, 15px);
+            margin-top: clamp(10px, 2vh, 20px);
             animation: glow 2s ease-in-out infinite;
             text-align: center;
+            font-weight: bold;
         }
 
         @keyframes glow {
@@ -113,10 +205,11 @@
         }
 
         .subtitle {
-            font-size: clamp(12px, 2.5vw, 18px);
+            font-size: clamp(14px, 3.5vw, 22px);
             color: #94a3b8;
-            margin-bottom: clamp(10px, 2vh, 20px);
+            margin-bottom: clamp(15px, 3vh, 25px);
             text-align: center;
+            font-weight: 500;
         }
 
         .slimeSelection {
@@ -127,9 +220,10 @@
 
         .slimeSelection h3 {
             color: white;
-            margin-bottom: 12px;
-            font-size: clamp(14px, 3vw, 20px);
+            margin-bottom: 15px;
+            font-size: clamp(18px, 4vw, 26px);
             text-align: center;
+            font-weight: bold;
         }
 
         .slimeOptions {
@@ -140,8 +234,8 @@
         }
 
         .slimeOption {
-            width: clamp(60px, 12vw, 100px);
-            height: clamp(60px, 12vw, 100px);
+            width: clamp(70px, 14vw, 110px);
+            height: clamp(70px, 14vw, 110px);
             border-radius: 20px;
             cursor: pointer;
             border: 4px solid transparent;
@@ -164,19 +258,12 @@
             transform: scale(1.15);
         }
 
-        .slimePreview {
-            width: 60px;
-            height: 50px;
-            max-width: 100%;
-            max-height: 100%;
-        }
-
         .controls {
             color: #94a3b8;
-            margin-bottom: clamp(10px, 2vh, 15px);
+            margin-bottom: clamp(15px, 3vh, 20px);
             text-align: center;
-            font-size: clamp(11px, 2vw, 14px);
-            line-height: 1.6;
+            font-size: clamp(14px, 3vw, 18px);
+            line-height: 1.8;
             max-width: 500px;
             padding: 0 10px;
         }
@@ -194,14 +281,15 @@
         }
 
         .audioToggle {
-            padding: clamp(6px, 1vh, 8px) clamp(12px, 2vw, 16px);
-            font-size: clamp(12px, 2.5vw, 16px);
+            padding: clamp(10px, 2vh, 14px) clamp(18px, 3vw, 24px);
+            font-size: clamp(14px, 3vw, 20px);
             background: rgba(255,255,255,0.1);
             color: white;
             border: 2px solid #7dd3fc;
             border-radius: 10px;
             cursor: pointer;
             transition: all 0.3s;
+            font-weight: 600;
         }
 
         .audioToggle:hover {
@@ -213,22 +301,32 @@
         }
 
         button {
-            margin-top: clamp(5px, 1vh, 10px);
-            padding: clamp(8px, 1.5vh, 12px) clamp(20px, 4vw, 40px);
-            font-size: clamp(14px, 3vw, 22px);
+            margin-top: clamp(8px, 2vh, 15px);
+            padding: clamp(14px, 2.5vh, 20px) clamp(32px, 6vw, 55px);
+            font-size: clamp(16px, 3.8vw, 24px);
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
             border-radius: 15px;
             cursor: pointer;
-            transition: transform 0.2s;
-            box-shadow: 0 5px 20px rgba(102,126,234,0.4);
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 15px rgba(102,126,234,0.4);
             font-weight: bold;
+            min-height: 48px;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        button:hover {
-            transform: scale(1.1);
-            box-shadow: 0 8px 25px rgba(102,126,234,0.6);
+        button:active {
+            transform: scale(0.95);
+            box-shadow: 0 2px 10px rgba(102,126,234,0.3);
+        }
+
+        @media (hover: hover) {
+            button:hover {
+                transform: scale(1.05);
+                box-shadow: 0 6px 20px rgba(102,126,234,0.6);
+            }
         }
 
         button:active {
@@ -248,34 +346,36 @@
             color: white;
             z-index: 20;
             min-width: min(400px, 90vw);
-            max-width: 90vw;
-            max-height: 90vh;
-            overflow-y: auto;
         }
 
         #gameOver h2 {
             font-size: clamp(28px, 6vw, 48px);
-            margin-bottom: clamp(10px, 2vh, 20px);
-            color: #4ecdc4;
+            margin-bottom: 20px;
+            color: #ef4444;
         }
 
         #gameOver p {
-            font-size: clamp(14px, 3vw, 24px);
-            margin: clamp(5px, 1vh, 10px) 0;
+            font-size: clamp(16px, 3vw, 20px);
+            margin: 10px 0;
         }
 
-        .gameOverButtons {
-            display: flex;
-            gap: clamp(8px, 2vw, 15px);
-            justify-content: center;
-            margin-top: clamp(10px, 2vh, 20px);
-            flex-wrap: wrap;
-        }
-
-        .gameOverButtons button {
-            padding: clamp(8px, 1.5vh, 12px) clamp(15px, 3vw, 30px);
-            font-size: clamp(14px, 2.5vw, 20px);
-            margin: 0;
+        .message-overlay {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.95);
+            color: white;
+            padding: 30px 50px;
+            border-radius: 20px;
+            font-size: clamp(20px, 4vw, 32px);
+            font-weight: bold;
+            text-align: center;
+            z-index: 100;
+            animation: popIn 0.3s ease-out;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            border: 3px solid #7dd3fc;
+            pointer-events: none;
         }
 
         #leaderboard {
@@ -362,96 +462,61 @@
         .loadingMsg {
             text-align: center;
             color: #94a3b8;
-            padding: clamp(10px, 2vh, 20px);
-            font-size: clamp(12px, 2.5vw, 18px);
+            padding: 20px;
+            font-size: clamp(14px, 3vw, 18px);
         }
 
-        .floatingBubble {
-            position: absolute;
-            border-radius: 50%;
-            background: radial-gradient(circle at 30% 30%, rgba(125,211,252,0.4), rgba(125,211,252,0.1));
-            animation: float 6s ease-in-out infinite;
-            pointer-events: none;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0) translateX(0); }
-            50% { transform: translateY(-30px) translateX(20px); }
-        }
-
-        #combo, #powerupIndicator {
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: clamp(24px, 6vw, 48px);
-            color: #fbbf24;
-            text-shadow: 0 0 20px rgba(251,191,36,0.8);
-            pointer-events: none;
-            z-index: 15;
-            display: none;
-        }
-
-        #combo {
-            top: 50%;
-            font-size: clamp(32px, 8vw, 72px);
-        }
-
-        #powerupIndicator {
-            bottom: clamp(10px, 2vh, 20px);
-            font-size: clamp(14px, 3vw, 24px);
-            background: rgba(0,0,0,0.7);
-            padding: clamp(8px, 1.5vh, 15px) clamp(15px, 3vw, 30px);
-            border-radius: 15px;
-            backdrop-filter: blur(10px);
-        }
-
-        /* Mobile landscape - suggest portrait mode */
-        @media (max-height: 500px) and (orientation: landscape) {
-            #gameContainer::before {
-                content: "↻ Please rotate your device to portrait mode for the best experience";
-                position: absolute;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                background: rgba(0,0,0,0.9);
-                color: #7dd3fc;
-                padding: 20px;
-                border-radius: 15px;
-                z-index: 100;
-                text-align: center;
-                font-size: 16px;
-                max-width: 80%;
-                pointer-events: none;
+        /* Mobile-specific optimizations */
+        @media (max-width: 768px) {
+            #ui {
+                top: max(10px, env(safe-area-inset-top));
+                gap: 6px;
             }
-            
+
+            .stat {
+                font-size: clamp(12px, 3vw, 16px);
+                padding: 6px 10px;
+            }
+
+            #startMenu h1 {
+                font-size: clamp(32px, 8vw, 48px);
+                margin-bottom: 15px;
+            }
+
+            button {
+                min-height: 44px;
+                font-size: clamp(15px, 3.5vw, 20px);
+            }
+
+            #gameOver h2 {
+                font-size: clamp(24px, 6vw, 40px);
+            }
+
+            #leaderboard h2 {
+                font-size: clamp(22px, 5vw, 36px);
+            }
+        }
+
+        /* Landscape mobile optimization */
+        @media (max-height: 600px) and (orientation: landscape) {
+            #ui {
+                top: 5px;
+                gap: 4px;
+            }
+
+            .stat {
+                font-size: 12px;
+                padding: 4px 8px;
+            }
+
             #startMenu {
                 padding: 10px;
             }
-            
-            #startMenu h1 {
-                font-size: clamp(20px, 5vw, 32px);
-                margin: 5px 0;
-            }
-            
-            .slimeSelection, .controls, .audioControls {
-                margin-bottom: 8px;
-            }
-        }
 
-        /* Tablet and desktop - vertical layout */
-        @media (min-width: 768px) {
-            #gameContainer {
-                width: min(450px, 90vw);
-                height: min(800px, 90vh);
-                border-radius: 20px;
-            }
-        }
-
-        /* Very small screens */
-        @media (max-width: 360px) {
-            .stat {
-                font-size: 12px;
-                padding: 5px 10px;
+            button {
+                margin-top: 5px;
+                padding: 10px 20px;
+                font-size: 14px;
             }
         }
     </style>
@@ -461,43 +526,86 @@
         <div id="canvasContainer">
             <canvas id="gameCanvas"></canvas>
         </div>
-        
+
+        <div id="ui">
+            <div class="stat" id="score">Score: 0</div>
+            <div class="stat" id="level">Level: 1</div>
+            <div class="stat" id="lives">Lives: ❤️❤️❤️</div>
+        </div>
+
+        <div id="bossHealthBar">
+            <div class="boss-bar-fill" style="width: 100%;"></div>
+            <span class="boss-bar-text">BOSS: 100/100</span>
+        </div>
+
+        <div id="powerupIndicator"></div>
+        <div id="combo"></div>
+
         <div id="startMenu">
-            <div class="floatingBubble" style="width: 80px; height: 80px; top: 10%; left: 10%; animation-delay: 0s;"></div>
-            <div class="floatingBubble" style="width: 60px; height: 60px; top: 20%; right: 15%; animation-delay: 1s;"></div>
-            <div class="floatingBubble" style="width: 100px; height: 100px; bottom: 15%; left: 20%; animation-delay: 2s;"></div>
-            <div class="floatingBubble" style="width: 70px; height: 70px; bottom: 25%; right: 10%; animation-delay: 1.5s;"></div>
-            
             <h1>🫧 Slime Bubble Pop 🫧</h1>
-            <p class="subtitle">Choose your slime and start the adventure!</p>
-            
+            <p class="subtitle">Catch the colorful bubbles and dodge the dangerous ones!</p>
+
             <div class="slimeSelection">
                 <h3>Select Your Slime Color:</h3>
                 <div class="slimeOptions">
-                    <div class="slimeOption selected" data-color="blue" onclick="selectSlime('blue')">
-                        <canvas class="slimePreview" width="60" height="50"></canvas>
+                    <div class="slimeOption selected" data-color="blue">
+                        <svg width="70" height="60" viewBox="0 0 70 60">
+                            <ellipse cx="35" cy="40" rx="32" ry="20" fill="#7dd3fc" opacity="0.3"/>
+                            <circle cx="35" cy="30" r="25" fill="#38bdf8"/>
+                            <circle cx="28" cy="25" r="5" fill="white"/>
+                            <circle cx="42" cy="25" r="5" fill="white"/>
+                            <circle cx="28" cy="25" r="3" fill="#1e293b"/>
+                            <circle cx="42" cy="25" r="3" fill="#1e293b"/>
+                        </svg>
                     </div>
-                    <div class="slimeOption" data-color="pink" onclick="selectSlime('pink')">
-                        <canvas class="slimePreview" width="60" height="50"></canvas>
+                    <div class="slimeOption" data-color="pink">
+                        <svg width="70" height="60" viewBox="0 0 70 60">
+                            <ellipse cx="35" cy="40" rx="32" ry="20" fill="#f9a8d4" opacity="0.3"/>
+                            <circle cx="35" cy="30" r="25" fill="#f472b6"/>
+                            <circle cx="28" cy="25" r="5" fill="white"/>
+                            <circle cx="42" cy="25" r="5" fill="white"/>
+                            <circle cx="28" cy="25" r="3" fill="#1e293b"/>
+                            <circle cx="42" cy="25" r="3" fill="#1e293b"/>
+                        </svg>
                     </div>
-                    <div class="slimeOption" data-color="green" onclick="selectSlime('green')">
-                        <canvas class="slimePreview" width="60" height="50"></canvas>
+                    <div class="slimeOption" data-color="green">
+                        <svg width="70" height="60" viewBox="0 0 70 60">
+                            <ellipse cx="35" cy="40" rx="32" ry="20" fill="#86efac" opacity="0.3"/>
+                            <circle cx="35" cy="30" r="25" fill="#4ade80"/>
+                            <circle cx="28" cy="25" r="5" fill="white"/>
+                            <circle cx="42" cy="25" r="5" fill="white"/>
+                            <circle cx="28" cy="25" r="3" fill="#1e293b"/>
+                            <circle cx="42" cy="25" r="3" fill="#1e293b"/>
+                        </svg>
                     </div>
-                    <div class="slimeOption" data-color="purple" onclick="selectSlime('purple')">
-                        <canvas class="slimePreview" width="60" height="50"></canvas>
+                    <div class="slimeOption" data-color="purple">
+                        <svg width="70" height="60" viewBox="0 0 70 60">
+                            <ellipse cx="35" cy="40" rx="32" ry="20" fill="#c084fc" opacity="0.3"/>
+                            <circle cx="35" cy="30" r="25" fill="#a855f7"/>
+                            <circle cx="28" cy="25" r="5" fill="white"/>
+                            <circle cx="42" cy="25" r="5" fill="white"/>
+                            <circle cx="28" cy="25" r="3" fill="#1e293b"/>
+                            <circle cx="42" cy="25" r="3" fill="#1e293b"/>
+                        </svg>
                     </div>
-                    <div class="slimeOption" data-color="orange" onclick="selectSlime('orange')">
-                        <canvas class="slimePreview" width="60" height="50"></canvas>
+                    <div class="slimeOption" data-color="orange">
+                        <svg width="70" height="60" viewBox="0 0 70 60">
+                            <ellipse cx="35" cy="40" rx="32" ry="20" fill="#fdba74" opacity="0.3"/>
+                            <circle cx="35" cy="30" r="25" fill="#fb923c"/>
+                            <circle cx="28" cy="25" r="5" fill="white"/>
+                            <circle cx="42" cy="25" r="5" fill="white"/>
+                            <circle cx="28" cy="25" r="3" fill="#1e293b"/>
+                            <circle cx="42" cy="25" r="3" fill="#1e293b"/>
+                        </svg>
                     </div>
                 </div>
             </div>
 
             <div class="controls">
                 <strong>Controls:</strong><br>
-                🖱️ Mouse/Touch - Move to control slime<br>
-                ⌨️ Arrow Keys or A/D - Keyboard control<br>
-                🎯 Catch blue bubbles, avoid red ones!<br>
-                ⭐ Collect power-ups for special abilities!
+                🖱️ Move mouse or touch to control your slime<br>
+                ⌨️ Arrow keys or A/D also work<br>
+                🎯 Catch good bubbles, avoid bad ones!
             </div>
 
             <div class="audioControls">
@@ -505,29 +613,22 @@
                 <button class="audioToggle" id="sfxToggle" onclick="toggleSFX()">🔊 SFX: ON</button>
             </div>
 
-            <button onclick="startGame()">Start Adventure!</button>
+            <button onclick="startGame()">🚀 Start Adventure!</button>
             <button onclick="showLeaderboard()" style="margin-top: 10px; background: linear-gradient(135deg, #4ecdc4 0%, #44a6a8 100%);">🏆 Leaderboard</button>
         </div>
-        
-        <div id="ui">
-            <div class="stat">Score: <span id="score">0</span></div>
-            <div class="stat">Level: <span id="level">1</span></div>
-            <div class="stat">Lives: <span id="lives">❤️❤️❤️</span></div>
-        </div>
-        
-        <div id="combo"></div>
-        <div id="powerupIndicator"></div>
-        
+
         <div id="gameOver">
             <h2>Game Over!</h2>
-            <p>Final Score: <span id="finalScore">0</span></p>
-            <p>Level Reached: <span id="finalLevel">1</span></p>
-            <p>Best Combo: <span id="bestCombo">0</span>x</p>
-            <div class="gameOverButtons">
-                <button onclick="restartGame()">Play Again</button>
-                <button onclick="showMainMenu()">Main Menu</button>
-                <button onclick="submitScore()">Submit Score</button>
+            <p id="finalScore">Final Score: 0</p>
+            <p id="finalLevel">Level Reached: 1</p>
+            <p id="bestComboText">Best Combo: 0x</p>
+            <div id="saveScoreSection" style="margin: 20px 0;">
+                <input type="text" id="playerNameInput" placeholder="Enter your name" style="padding: 10px; font-size: 16px; border-radius: 8px; border: 2px solid #7dd3fc; background: rgba(255,255,255,0.1); color: white; width: 80%; max-width: 300px; text-align: center;" maxlength="20">
+                <button onclick="saveScore()" style="margin-top: 10px; background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);">💾 Save Score</button>
             </div>
+            <button onclick="restartGame()">Play Again</button>
+            <button onclick="showMenu()">Main Menu</button>
+            <button onclick="showLeaderboard()" style="background: linear-gradient(135deg, #4ecdc4 0%, #44a6a8 100%);">🏆 View Leaderboard</button>
         </div>
 
         <div id="leaderboard">
@@ -599,42 +700,35 @@
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         
-        // Responsive canvas setup - VERTICAL/PORTRAIT MODE
         let scale = 1;
-        let canvasWidth = 450;  // Base width for portrait
-        let canvasHeight = 800; // Base height for portrait
+        let canvasWidth = 450;
+        let canvasHeight = 800;
 
         function resizeCanvas() {
             const container = document.getElementById('canvasContainer');
             const containerWidth = container.clientWidth;
             const containerHeight = container.clientHeight;
             
-            // Calculate aspect ratio - PORTRAIT 9:16
-            const targetAspect = 9 / 16; // Portrait mode
+            const targetAspect = 9 / 16;
             const containerAspect = containerWidth / containerHeight;
             
             if (containerAspect > targetAspect) {
-                // Container is wider - fit to height
                 canvasHeight = containerHeight;
                 canvasWidth = containerHeight * targetAspect;
             } else {
-                // Container is taller - fit to width
                 canvasWidth = containerWidth;
                 canvasHeight = containerWidth / targetAspect;
             }
             
-            // Set canvas size
             canvas.width = canvasWidth;
             canvas.height = canvasHeight;
-            
-            // Calculate scale for game objects (based on width now)
             scale = canvasWidth / 450;
             
-            // Update slime position to stay in bounds
             if (slime.x > canvasWidth) slime.x = canvasWidth / 2;
             if (slime.targetX > canvasWidth) slime.targetX = canvasWidth / 2;
         }
 
+        // Game variables
         let score = 0;
         let level = 1;
         let lives = 3;
@@ -642,7 +736,6 @@
         let bubbles = [];
         let particles = [];
         let powerups = [];
-        let obstacles = [];
         let mouseX = 0;
         let selectedSlimeColor = 'blue';
         let keys = {};
@@ -651,163 +744,372 @@
         let comboTimer = 0;
         let activePowerup = null;
         let powerupTimer = 0;
-        let bgOffset = 0;
         let musicEnabled = true;
         let sfxEnabled = true;
         let audioContext = null;
-        let currentPlayerName = '';
+
+        // Game mode variables
+        let bossMode = false;
+        let boss = null;
+        let bubblesPopped = 0;
+        let bubblesNeededForLevel = 30;
+        let achievements = [];
+        let explosiveBubblesPopped = 0;
+        let perfectLevels = 0;
+        let levelStartLives = 3;
 
         const slimeColors = {
-            blue: { primary: '#7dd3fc', secondary: '#38bdf8', tertiary: '#0284c7', drop: '#60a5fa' },
-            pink: { primary: '#f9a8d4', secondary: '#f472b6', tertiary: '#ec4899', drop: '#f9a8d4' },
-            green: { primary: '#86efac', secondary: '#4ade80', tertiary: '#22c55e', drop: '#86efac' },
-            purple: { primary: '#c084fc', secondary: '#a855f7', tertiary: '#9333ea', drop: '#c084fc' },
-            orange: { primary: '#fdba74', secondary: '#fb923c', tertiary: '#f97316', drop: '#fdba74' }
+            blue: { primary: '#7dd3fc', secondary: '#38bdf8', tertiary: '#0284c7' },
+            pink: { primary: '#f9a8d4', secondary: '#f472b6', tertiary: '#ec4899' },
+            green: { primary: '#86efac', secondary: '#4ade80', tertiary: '#22c55e' },
+            purple: { primary: '#c084fc', secondary: '#a855f7', tertiary: '#9333ea' },
+            orange: { primary: '#fdba74', secondary: '#fb923c', tertiary: '#f97316' }
         };
 
         const slime = {
-            x: 225,      // Center of 450px width
-            y: 720,      // Near bottom of 800px height
+            x: 225,
+            y: 720,
             width: 60,
             height: 50,
             speed: 8,
             targetX: 225
         };
 
+        // Enhanced Bubble Class
         class Bubble {
-            constructor(x, y, speed, type = 'good') {
+            constructor(x, y, speed, type = 'good', specialType = 'normal') {
                 this.x = x;
                 this.y = y;
                 this.radius = (15 + Math.random() * 15) * scale;
                 this.speed = speed * scale;
                 this.type = type;
+                this.specialType = specialType;
                 this.wobble = Math.random() * Math.PI * 2;
                 this.wobbleSpeed = 0.05 + Math.random() * 0.05;
-                this.color = type === 'good' ? 
-                    `hsl(${180 + Math.random() * 60}, 80%, 60%)` : 
-                    `hsl(${0 + Math.random() * 30}, 80%, 50%)`;
-                this.points = type === 'good' ? 10 : 0;
+                this.health = 1;
+                this.maxHealth = 1;
+                this.zigzagPhase = 0;
+                this.pulse = 0;
+                this.points = 10;
+                
+                this.setupSpecialType();
             }
-
+            
+            setupSpecialType() {
+                switch (this.specialType) {
+                    case 'fast':
+                        this.color = '#ec4899';
+                        this.speed *= 1.8;
+                        this.radius *= 0.75;
+                        this.points = 25;
+                        break;
+                    case 'spiky':
+                        this.color = '#ef4444';
+                        this.type = 'bad';
+                        this.spikeCount = 8;
+                        this.points = 0;
+                        break;
+                    case 'splitting':
+                        this.color = '#a78bfa';
+                        this.canSplit = true;
+                        this.points = 20;
+                        break;
+                    case 'explosive':
+                        this.color = '#f59e0b';
+                        this.explosionRadius = 80 * scale;
+                        this.points = 30;
+                        break;
+                    case 'shield':
+                        this.color = '#06b6d4';
+                        this.health = 3;
+                        this.maxHealth = 3;
+                        this.points = 50;
+                        break;
+                    case 'zigzag':
+                        this.color = '#10b981';
+                        this.speed *= 0.8;
+                        this.zigzagSpeed = 3 * scale;
+                        this.points = 30;
+                        break;
+                    default:
+                        this.color = this.type === 'good' ? 
+                            `hsl(${180 + Math.random() * 60}, 80%, 60%)` : 
+                            `hsl(${0 + Math.random() * 30}, 80%, 50%)`;
+                        this.points = this.type === 'good' ? 10 : 0;
+                }
+            }
+            
             update() {
-                this.y += this.speed * (activePowerup === 'slowmo' ? 0.5 : 1);
+                let speedMod = activePowerup === 'slowmo' ? 0.5 : 1;
+                speedMod = activePowerup === 'freeze' ? 0 : speedMod;
+                
+                this.y += this.speed * speedMod;
                 this.wobble += this.wobbleSpeed;
-                this.x += Math.sin(this.wobble) * 2 * scale;
+                this.pulse += 0.1;
+                
+                if (this.specialType === 'zigzag') {
+                    this.zigzagPhase += 0.08;
+                    this.x += Math.sin(this.zigzagPhase) * this.zigzagSpeed;
+                } else if (this.specialType === 'fast') {
+                    this.x += (Math.random() - 0.5) * 2 * scale;
+                }
+                
+                if (this.x - this.radius < 0) this.x = this.radius;
+                if (this.x + this.radius > canvasWidth) this.x = canvasWidth - this.radius;
             }
-
-            draw() {
-                const gradient = ctx.createRadialGradient(
-                    this.x - this.radius * 0.3, this.y - this.radius * 0.3, this.radius * 0.1,
-                    this.x, this.y, this.radius
-                );
-                gradient.addColorStop(0, this.type === 'good' ? 'rgba(255,255,255,0.8)' : 'rgba(255,200,200,0.8)');
-                gradient.addColorStop(0.5, this.color);
-                gradient.addColorStop(1, this.type === 'good' ? 'rgba(100,200,255,0.6)' : 'rgba(200,50,50,0.6)');
-
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                ctx.fillStyle = gradient;
-                ctx.fill();
-
-                ctx.beginPath();
-                ctx.arc(this.x - this.radius * 0.4, this.y - this.radius * 0.4, this.radius * 0.3, 0, Math.PI * 2);
-                ctx.fillStyle = 'rgba(255,255,255,0.4)';
-                ctx.fill();
-            }
-        }
-
-        class Powerup {
-            constructor(x, y, type) {
-                this.x = x;
-                this.y = y;
-                this.radius = 20 * scale;
-                this.speed = 2 * scale;
-                this.type = type;
-                this.rotation = 0;
-                this.icons = {
-                    shield: '🛡️',
-                    slowmo: '⏰',
-                    magnet: '🧲',
-                    double: '✨',
-                    life: '❤️'
-                };
-            }
-
-            update() {
-                this.y += this.speed;
-                this.rotation += 0.05;
-            }
-
+            
             draw() {
                 ctx.save();
-                ctx.translate(this.x, this.y);
-                ctx.rotate(this.rotation);
                 
-                const gradient = ctx.createRadialGradient(0, 0, 5 * scale, 0, 0, this.radius);
-                gradient.addColorStop(0, 'rgba(251,191,36,0.8)');
-                gradient.addColorStop(1, 'rgba(245,158,11,0.4)');
+                const wobbleX = Math.sin(this.wobble) * 5 * scale;
+                ctx.translate(this.x + wobbleX, this.y);
                 
+                if (this.specialType === 'explosive') {
+                    const pulseScale = 1 + Math.sin(this.pulse) * 0.1;
+                    ctx.scale(pulseScale, pulseScale);
+                }
+                
+                if (this.specialType === 'spiky') {
+                    this.drawSpiky();
+                } else if (this.specialType === 'shield' && this.health > 1) {
+                    this.drawShield();
+                } else {
+                    this.drawNormal();
+                }
+                
+                if (this.maxHealth > 1 && this.specialType !== 'spiky') {
+                    this.drawHealthBar();
+                }
+                
+                if (this.specialType === 'explosive') {
+                    ctx.font = `${18 * scale}px Arial`;
+                    ctx.fillText('💣', -9 * scale, 6 * scale);
+                }
+                
+                ctx.restore();
+            }
+            
+            drawNormal() {
+                const gradient = ctx.createRadialGradient(
+                    -this.radius/3, -this.radius/3, 0,
+                    0, 0, this.radius
+                );
+                gradient.addColorStop(0, 'rgba(255,255,255,0.8)');
+                gradient.addColorStop(0.5, this.color);
+                // Convert HSL to rgba with transparency
+                const colorWithAlpha = this.color.replace('hsl(', 'hsla(').replace(')', ', 0.4)');
+                gradient.addColorStop(1, colorWithAlpha);
+                
+                ctx.fillStyle = gradient;
                 ctx.beginPath();
                 ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
-                ctx.fillStyle = gradient;
                 ctx.fill();
-                ctx.strokeStyle = '#fbbf24';
-                ctx.lineWidth = 3 * scale;
+                
+                ctx.fillStyle = 'rgba(255,255,255,0.4)';
+                ctx.beginPath();
+                ctx.arc(-this.radius/3, -this.radius/3, this.radius/4, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            drawSpiky() {
+                ctx.fillStyle = this.color;
+                ctx.strokeStyle = '#991b1b';
+                ctx.lineWidth = 2 * scale;
+                
+                ctx.beginPath();
+                for (let i = 0; i < this.spikeCount; i++) {
+                    const angle = (Math.PI * 2 / this.spikeCount) * i;
+                    const innerR = this.radius;
+                    const outerR = this.radius * 1.5;
+                    
+                    if (i === 0) ctx.moveTo(Math.cos(angle) * innerR, Math.sin(angle) * innerR);
+                    ctx.lineTo(Math.cos(angle) * outerR, Math.sin(angle) * outerR);
+                    ctx.lineTo(
+                        Math.cos(angle + Math.PI / this.spikeCount) * innerR,
+                        Math.sin(angle + Math.PI / this.spikeCount) * innerR
+                    );
+                }
+                ctx.closePath();
+                ctx.fill();
                 ctx.stroke();
+            }
+            
+            drawShield() {
+                this.drawNormal();
+                for (let i = 1; i <= this.health; i++) {
+                    ctx.strokeStyle = `rgba(6, 182, 212, ${0.3 * i})`;
+                    ctx.lineWidth = 3 * scale;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, this.radius + (i * 6 * scale), 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+            }
+            
+            drawHealthBar() {
+                const barWidth = this.radius * 2;
+                const barHeight = 4 * scale;
+                const healthPercent = this.health / this.maxHealth;
                 
-                ctx.font = `${24 * scale}px Arial`;
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText(this.icons[this.type], 0, 0);
-                
-                ctx.restore();
+                ctx.fillStyle = '#000';
+                ctx.fillRect(-barWidth/2, this.radius + 6 * scale, barWidth, barHeight);
+                ctx.fillStyle = healthPercent > 0.5 ? '#22c55e' : '#f59e0b';
+                ctx.fillRect(-barWidth/2, this.radius + 6 * scale, barWidth * healthPercent, barHeight);
+            }
+            
+            takeDamage() {
+                this.health--;
+                return this.health <= 0;
+            }
+            
+            split() {
+                if (this.specialType === 'splitting' && this.canSplit) {
+                    const child1 = new Bubble(this.x - 20 * scale, this.y, this.speed / scale * 1.3, this.type, 'normal');
+                    const child2 = new Bubble(this.x + 20 * scale, this.y, this.speed / scale * 1.3, this.type, 'normal');
+                    child1.radius = this.radius * 0.6;
+                    child2.radius = this.radius * 0.6;
+                    child1.points = 10;
+                    child2.points = 10;
+                    return [child1, child2];
+                }
+                return [];
+            }
+            
+            explode() {
+                if (this.specialType === 'explosive') {
+                    const affected = [];
+                    bubbles.forEach((bubble, index) => {
+                        const dx = bubble.x - this.x;
+                        const dy = bubble.y - this.y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        if (dist < this.explosionRadius && bubble !== this) {
+                            affected.push(index);
+                        }
+                    });
+                    return affected;
+                }
+                return [];
             }
         }
 
-        class Obstacle {
-            constructor(x, y) {
-                this.x = x;
-                this.y = y;
-                this.width = 80 * scale;
-                this.height = 20 * scale;
-                this.speed = (2 + level * 0.2) * scale;
+        // Boss Class
+        class Boss {
+            constructor(lvl) {
+                this.x = canvasWidth / 2;
+                this.y = 100 * scale;
+                this.radius = 60 * scale;
+                this.health = 100 + (lvl * 15);
+                this.maxHealth = this.health;
+                this.speed = 2 * scale;
+                this.direction = 1;
+                this.phase = 1;
+                this.spawnTimer = 0;
+                this.spawnRate = 60;
+                this.angryLevel = 0;
             }
-
+            
             update() {
-                this.y += this.speed;
+                this.x += this.speed * this.direction;
+                
+                if (this.x - this.radius < 0 || this.x + this.radius > canvasWidth) {
+                    this.direction *= -1;
+                }
+                
+                const healthPercent = this.health / this.maxHealth;
+                if (healthPercent < 0.33) {
+                    this.phase = 3;
+                    this.spawnRate = 30;
+                    this.speed = 3.5 * scale;
+                } else if (healthPercent < 0.66) {
+                    this.phase = 2;
+                    this.spawnRate = 45;
+                    this.speed = 2.5 * scale;
+                }
+                
+                this.spawnTimer++;
+                if (this.spawnTimer >= this.spawnRate) {
+                    this.spawnTimer = 0;
+                    return this.spawnMinion();
+                }
+                return null;
             }
-
+            
+            spawnMinion() {
+                const x = this.x + (Math.random() - 0.5) * 100 * scale;
+                const types = this.phase === 1 ? ['normal'] :
+                             this.phase === 2 ? ['normal', 'fast', 'spiky'] :
+                             ['normal', 'fast', 'spiky', 'splitting'];
+                const specialType = types[Math.floor(Math.random() * types.length)];
+                return new Bubble(x, this.y + this.radius, 1.5 + level * 0.15, 'bad', specialType);
+            }
+            
             draw() {
                 ctx.save();
-                ctx.shadowBlur = 10 * scale;
-                ctx.shadowColor = 'rgba(239,68,68,0.5)';
                 
-                const gradient = ctx.createLinearGradient(this.x, this.y, this.x, this.y + this.height);
-                gradient.addColorStop(0, '#ef4444');
-                gradient.addColorStop(1, '#dc2626');
+                if (this.health < this.maxHealth * 0.33) {
+                    this.angryLevel += 0.15;
+                    const pulse = 1 + Math.sin(this.angryLevel) * 0.08;
+                    ctx.translate(this.x, this.y);
+                    ctx.scale(pulse, pulse);
+                    ctx.translate(-this.x, -this.y);
+                }
+                
+                const gradient = ctx.createRadialGradient(
+                    this.x - this.radius/3, this.y - this.radius/3, 0,
+                    this.x, this.y, this.radius
+                );
+                gradient.addColorStop(0, '#dc2626');
+                gradient.addColorStop(0.5, '#991b1b');
+                gradient.addColorStop(1, '#7f1d1d');
                 
                 ctx.fillStyle = gradient;
-                ctx.fillRect(this.x, this.y, this.width, this.height);
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fill();
                 
-                ctx.fillStyle = '#fca5a5';
-                ctx.fillRect(this.x + 5 * scale, this.y + 5 * scale, this.width - 10 * scale, this.height - 10 * scale);
+                // Crown
+                ctx.fillStyle = '#fbbf24';
+                for (let i = 0; i < 5; i++) {
+                    const angle = Math.PI + (i * Math.PI / 8);
+                    const hornX = this.x + Math.cos(angle) * this.radius;
+                    const hornY = this.y + Math.sin(angle) * this.radius;
+                    ctx.beginPath();
+                    ctx.moveTo(hornX, hornY);
+                    ctx.lineTo(hornX + 8 * scale, hornY - 15 * scale);
+                    ctx.lineTo(hornX - 8 * scale, hornY - 8 * scale);
+                    ctx.closePath();
+                    ctx.fill();
+                }
+                
+                // Eyes
+                ctx.fillStyle = '#fef3c7';
+                ctx.beginPath();
+                ctx.arc(this.x - 20 * scale, this.y - 5 * scale, 12 * scale, 0, Math.PI * 2);
+                ctx.arc(this.x + 20 * scale, this.y - 5 * scale, 12 * scale, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.fillStyle = '#7f1d1d';
+                ctx.beginPath();
+                ctx.arc(this.x - 20 * scale, this.y - 5 * scale, 6 * scale, 0, Math.PI * 2);
+                ctx.arc(this.x + 20 * scale, this.y - 5 * scale, 6 * scale, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Mouth
+                ctx.strokeStyle = '#450a0a';
+                ctx.lineWidth = 3 * scale;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y + 15 * scale, 25 * scale, 0.2, Math.PI - 0.2);
+                ctx.stroke();
                 
                 ctx.restore();
             }
-
-            checkCollision() {
-                if (activePowerup === 'shield') return false;
-                
-                const slimeScaledWidth = slime.width * scale;
-                const slimeScaledHeight = slime.height * scale;
-                
-                return slime.x + slimeScaledWidth / 2 > this.x &&
-                       slime.x - slimeScaledWidth / 2 < this.x + this.width &&
-                       slime.y + slimeScaledHeight / 2 > this.y &&
-                       slime.y - slimeScaledHeight / 2 < this.y + this.height;
+            
+            takeDamage(amount = 10) {
+                this.health -= amount;
+                return this.health <= 0;
             }
         }
 
+        // Particle Class
         class Particle {
             constructor(x, y, color) {
                 this.x = x;
@@ -836,6 +1138,49 @@
             }
         }
 
+        // Powerup Class
+        class Powerup {
+            constructor(x, y, type) {
+                this.x = x;
+                this.y = y;
+                this.radius = 20 * scale;
+                this.speed = 2 * scale;
+                this.type = type;
+                this.rotation = 0;
+                this.icons = {
+                    shield: '🛡️',
+                    slowmo: '⏰',
+                    magnet: '🧲',
+                    double: '✨',
+                    life: '❤️'
+                };
+            }
+
+            update() {
+                this.y += this.speed;
+                this.rotation += 0.1;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation);
+                
+                ctx.fillStyle = 'rgba(255,255,255,0.2)';
+                ctx.beginPath();
+                ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.font = `${this.radius * 1.5}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(this.icons[this.type] || '⭐', 0, 0);
+                
+                ctx.restore();
+            }
+        }
+
+        // Audio functions
         function initAudio() {
             if (!audioContext) {
                 audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -854,163 +1199,42 @@
             oscillator.frequency.value = frequency;
             oscillator.type = type;
             
-            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
             gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
             
             oscillator.start(audioContext.currentTime);
             oscillator.stop(audioContext.currentTime + duration);
         }
 
-        function playBubblePop() {
-            playSound(800, 0.1, 'sine');
-            setTimeout(() => playSound(1200, 0.05, 'sine'), 50);
-        }
-
-        function playPowerupSound() {
-            playSound(523, 0.1, 'square');
-            setTimeout(() => playSound(659, 0.1, 'square'), 100);
-            setTimeout(() => playSound(784, 0.15, 'square'), 200);
-        }
-
-        function playHitSound() {
-            playSound(100, 0.2, 'sawtooth');
-        }
-
-        function playComboSound(comboLevel) {
-            const baseFreq = 400 + (comboLevel * 50);
-            playSound(baseFreq, 0.15, 'triangle');
-        }
-
         function toggleMusic() {
             musicEnabled = !musicEnabled;
-            const btn = document.getElementById('musicToggle');
-            btn.textContent = musicEnabled ? '🎵 Music: ON' : '🎵 Music: OFF';
-            btn.classList.toggle('muted');
+            document.getElementById('musicToggle').textContent = musicEnabled ? '🎵 Music: ON' : '🎵 Music: OFF';
+            document.getElementById('musicToggle').classList.toggle('muted');
         }
 
         function toggleSFX() {
             sfxEnabled = !sfxEnabled;
-            const btn = document.getElementById('sfxToggle');
-            btn.textContent = sfxEnabled ? '🔊 SFX: ON' : '🔊 SFX: OFF';
-            btn.classList.toggle('muted');
+            document.getElementById('sfxToggle').textContent = sfxEnabled ? '🔊 SFX: ON' : '🔊 SFX: OFF';
+            document.getElementById('sfxToggle').classList.toggle('muted');
         }
 
-        function drawSlime() {
-            const squish = Math.sin(Date.now() * 0.005) * 3 * scale;
-            const colors = slimeColors[selectedSlimeColor];
-            const slimeScaledWidth = slime.width * scale;
-            const slimeScaledHeight = slime.height * scale;
-            
-            if (activePowerup === 'shield') {
-                ctx.strokeStyle = 'rgba(125,211,252,0.5)';
-                ctx.lineWidth = 3 * scale;
-                ctx.beginPath();
-                ctx.arc(slime.x, slime.y, slimeScaledWidth / 2 + 15 * scale, 0, Math.PI * 2);
-                ctx.stroke();
-            }
-            
-            ctx.shadowBlur = 20 * scale;
-            ctx.shadowColor = `${colors.primary}80`;
-            
-            const gradient = ctx.createRadialGradient(
-                slime.x, slime.y - 10 * scale, 10 * scale,
-                slime.x, slime.y, slimeScaledWidth / 2
-            );
-            gradient.addColorStop(0, colors.primary);
-            gradient.addColorStop(0.5, colors.secondary);
-            gradient.addColorStop(1, colors.tertiary);
-
-            ctx.beginPath();
-            ctx.ellipse(slime.x, slime.y + 10 * scale, slimeScaledWidth / 2 + squish, slimeScaledHeight / 2 - squish, 0, 0, Math.PI * 2);
-            ctx.fillStyle = gradient;
-            ctx.fill();
-
-            ctx.beginPath();
-            ctx.moveTo(slime.x - 5 * scale, slime.y - 15 * scale);
-            ctx.bezierCurveTo(
-                slime.x - 5 * scale, slime.y - 25 * scale,
-                slime.x + 5 * scale, slime.y - 25 * scale,
-                slime.x + 5 * scale, slime.y - 15 * scale
-            );
-            ctx.bezierCurveTo(
-                slime.x + 10 * scale, slime.y - 20 * scale,
-                slime.x + 8 * scale, slime.y - 8 * scale,
-                slime.x, slime.y - 10 * scale
-            );
-            ctx.fillStyle = colors.drop;
-            ctx.fill();
-
-            ctx.shadowBlur = 0;
-
-            const eyeY = slime.y - 5 * scale;
-            ctx.fillStyle = 'white';
-            ctx.beginPath();
-            ctx.arc(slime.x - 12 * scale, eyeY, 8 * scale, 0, Math.PI * 2);
-            ctx.arc(slime.x + 12 * scale, eyeY, 8 * scale, 0, Math.PI * 2);
-            ctx.fill();
-
-            ctx.fillStyle = '#1e293b';
-            ctx.beginPath();
-            ctx.arc(slime.x - 12 * scale, eyeY, 5 * scale, 0, Math.PI * 2);
-            ctx.arc(slime.x + 12 * scale, eyeY, 5 * scale, 0, Math.PI * 2);
-            ctx.fill();
-
-            ctx.fillStyle = 'white';
-            ctx.beginPath();
-            ctx.arc(slime.x - 10 * scale, eyeY - 2 * scale, 2 * scale, 0, Math.PI * 2);
-            ctx.arc(slime.x + 14 * scale, eyeY - 2 * scale, 2 * scale, 0, Math.PI * 2);
-            ctx.fill();
-
-            ctx.strokeStyle = '#f472b6';
-            ctx.lineWidth = 2 * scale;
-            ctx.beginPath();
-            ctx.arc(slime.x, eyeY + 8 * scale, 8 * scale, 0.2, Math.PI - 0.2);
-            ctx.stroke();
-        }
-
-        function drawSlimePreview(canvas, color) {
-            const ctx = canvas.getContext('2d');
-            const centerX = canvas.width / 2;
-            const centerY = canvas.height / 2;
-            const colors = slimeColors[color];
-            
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            const gradient = ctx.createRadialGradient(centerX, centerY - 5, 5, centerX, centerY, 20);
-            gradient.addColorStop(0, colors.primary);
-            gradient.addColorStop(0.5, colors.secondary);
-            gradient.addColorStop(1, colors.tertiary);
-
-            ctx.beginPath();
-            ctx.ellipse(centerX, centerY + 5, 25, 20, 0, 0, Math.PI * 2);
-            ctx.fillStyle = gradient;
-            ctx.fill();
-
-            ctx.beginPath();
-            ctx.moveTo(centerX - 3, centerY - 8);
-            ctx.bezierCurveTo(centerX - 3, centerY - 13, centerX + 3, centerY - 13, centerX + 3, centerY - 8);
-            ctx.bezierCurveTo(centerX + 5, centerY - 10, centerX + 4, centerY - 5, centerX, centerY - 6);
-            ctx.fillStyle = colors.drop;
-            ctx.fill();
-
-            ctx.fillStyle = 'white';
-            ctx.beginPath();
-            ctx.arc(centerX - 8, centerY, 4, 0, Math.PI * 2);
-            ctx.arc(centerX + 8, centerY, 4, 0, Math.PI * 2);
-            ctx.fill();
-
-            ctx.fillStyle = '#1e293b';
-            ctx.beginPath();
-            ctx.arc(centerX - 8, centerY, 2.5, 0, Math.PI * 2);
-            ctx.arc(centerX + 8, centerY, 2.5, 0, Math.PI * 2);
-            ctx.fill();
-        }
-
+        // Game functions
         function spawnBubble() {
+            if (bubbles.length >= 25) return; // Max bubbles on screen
+            
             const x = Math.random() * (canvasWidth - 60 * scale) + 30 * scale;
-            const speed = 1 + level * 0.3;
-            const type = Math.random() > 0.25 ? 'good' : 'bad';
-            bubbles.push(new Bubble(x, -30 * scale, speed, type));
+            const speed = 1.5 + level * 0.15;
+            
+            let specialType = 'normal';
+            const rand = Math.random();
+            
+            if (level >= 21 && rand < 0.12) specialType = 'explosive';
+            else if (level >= 16 && rand < 0.22) specialType = rand < 0.17 ? 'zigzag' : 'splitting';
+            else if (level >= 11 && rand < 0.35) specialType = 'spiky';
+            else if (level >= 6 && rand < 0.50) specialType = rand < 0.42 ? 'fast' : 'shield';
+            
+            const type = specialType === 'spiky' ? 'bad' : (Math.random() > 0.25 ? 'good' : 'bad');
+            bubbles.push(new Bubble(x, -30 * scale, speed, type, specialType));
         }
 
         function spawnPowerup() {
@@ -1018,11 +1242,6 @@
             const type = types[Math.floor(Math.random() * types.length)];
             const x = Math.random() * (canvasWidth - 60 * scale) + 30 * scale;
             powerups.push(new Powerup(x, -30 * scale, type));
-        }
-
-        function spawnObstacle() {
-            const x = Math.random() * (canvasWidth - 100 * scale) + 50 * scale;
-            obstacles.push(new Obstacle(x, -30 * scale));
         }
 
         function activatePowerup(type) {
@@ -1042,18 +1261,20 @@
                 lives = Math.min(lives + 1, 5);
                 powerupTimer = 0;
                 activePowerup = null;
+                showMessage('❤️ +1 Life!', 1500);
             } else {
                 indicator.textContent = messages[type];
                 indicator.style.display = 'block';
             }
             
-            playPowerupSound();
+            playSound(523, 0.1, 'square');
+            setTimeout(() => playSound(659, 0.1, 'square'), 100);
         }
 
         function checkCollision(bubble) {
             const slimeScaledWidth = slime.width * scale;
             let range = bubble.radius + slimeScaledWidth / 2;
-            if (activePowerup === 'magnet') range += 50 * scale;
+            if (activePowerup === 'magnet') range += 40 * scale;
             
             const dx = bubble.x - slime.x;
             const dy = bubble.y - slime.y;
@@ -1070,15 +1291,161 @@
         function showCombo() {
             if (combo > 1) {
                 const comboEl = document.getElementById('combo');
-                comboEl.textContent = `${combo}x COMBO!`;
+                const multiplier = Math.min(combo / 2, 5).toFixed(1);
+                comboEl.textContent = `${combo}x COMBO!\n${multiplier}x Points`;
                 comboEl.style.display = 'block';
                 
                 setTimeout(() => {
                     comboEl.style.display = 'none';
-                }, 500);
+                }, 800);
                 
-                playComboSound(combo);
+                playSound(400 + (combo * 30), 0.15, 'triangle');
             }
+        }
+
+        function showMessage(text, duration = 2000) {
+            const msgEl = document.createElement('div');
+            msgEl.className = 'message-overlay';
+            msgEl.innerHTML = text.replace('\n', '<br>');
+            document.body.appendChild(msgEl);
+            
+            setTimeout(() => {
+                msgEl.style.animation = 'fadeOut 0.3s ease-out';
+                setTimeout(() => msgEl.remove(), 300);
+            }, duration);
+        }
+
+        function unlockAchievement(id, name, desc) {
+            if (!achievements.includes(id)) {
+                achievements.push(id);
+                showMessage(`🏆 Achievement!\n${name}`, 2500);
+                playSound(1000, 0.3, 'square');
+            }
+        }
+
+        function startBossBattle() {
+            bossMode = true;
+            boss = new Boss(level);
+            bubbles = [];
+            showMessage('⚠️ BOSS BATTLE! ⚠️', 2000);
+            document.getElementById('bossHealthBar').style.display = 'block';
+            playSound(150, 0.5, 'sawtooth');
+        }
+
+        function updateBossHealthBar() {
+            if (!boss) return;
+            const healthPercent = (boss.health / boss.maxHealth) * 100;
+            document.querySelector('.boss-bar-fill').style.width = healthPercent + '%';
+            document.querySelector('.boss-bar-text').textContent = `BOSS: ${Math.max(0, boss.health)}/${boss.maxHealth}`;
+        }
+
+        function endBossBattle(victory) {
+            bossMode = false;
+            document.getElementById('bossHealthBar').style.display = 'none';
+            
+            if (victory) {
+                score += 1000;
+                showMessage('🏆 BOSS DEFEATED!\n+1000 Points', 2500);
+                spawnPowerup();
+                playSound(800, 0.5, 'sine');
+                setTimeout(() => playSound(1000, 0.5, 'sine'), 200);
+                
+                if (level === 10) unlockAchievement('boss_1', 'Boss Slayer', 'Defeated your first boss');
+            } else {
+                lives = Math.max(0, lives - 2);
+                showMessage('💀 BOSS ESCAPED!\n-2 Lives', 2000);
+                playSound(100, 0.5, 'sawtooth');
+                if (lives <= 0) {
+                    setTimeout(endGame, 1000);
+                }
+            }
+            boss = null;
+        }
+
+        function checkLevelUp() {
+            if (bubblesPopped >= bubblesNeededForLevel && !bossMode) {
+                bubblesPopped = 0;
+                bubblesNeededForLevel = 30 + (level * 3);
+                
+                // Check for perfect level
+                if (lives === levelStartLives) {
+                    perfectLevels++;
+                    if (perfectLevels >= 3) {
+                        unlockAchievement('perfect_3', 'Untouchable', 'Complete 3 levels without damage');
+                    }
+                }
+                levelStartLives = lives;
+                
+                // Level up
+                level++;
+                showMessage(`🎉 LEVEL ${level}! 🎉`, 1500);
+                playSound(600, 0.3, 'square');
+                
+                // Check for boss battle
+                if (level % 10 === 0) {
+                    setTimeout(startBossBattle, 1500);
+                }
+                
+                // Achievement checks
+                if (level === 10) unlockAchievement('level_10', 'Level 10', 'Reached level 10');
+                if (level === 25) unlockAchievement('level_25', 'Bubble Master', 'Reached level 25');
+                
+                // Spawn bonus powerup
+                if (Math.random() < 0.3) {
+                    setTimeout(spawnPowerup, 500);
+                }
+            }
+        }
+
+        function drawSlime() {
+            const colors = slimeColors[selectedSlimeColor];
+            const slimeScaledWidth = slime.width * scale;
+            const slimeScaledHeight = slime.height * scale;
+            
+            ctx.save();
+            ctx.translate(slime.x, slime.y);
+            
+            // Shadow
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+            ctx.beginPath();
+            ctx.ellipse(0, slimeScaledHeight * 0.3, slimeScaledWidth * 0.5, slimeScaledHeight * 0.15, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Body
+            const gradient = ctx.createRadialGradient(
+                -slimeScaledWidth * 0.2, -slimeScaledHeight * 0.3, 0,
+                0, 0, slimeScaledWidth * 0.6
+            );
+            gradient.addColorStop(0, colors.primary);
+            gradient.addColorStop(0.7, colors.secondary);
+            gradient.addColorStop(1, colors.tertiary);
+            
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.ellipse(0, 0, slimeScaledWidth * 0.45, slimeScaledHeight * 0.45, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Eyes
+            const eyeY = -slimeScaledHeight * 0.1;
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.arc(-slimeScaledWidth * 0.15, eyeY, slimeScaledWidth * 0.1, 0, Math.PI * 2);
+            ctx.arc(slimeScaledWidth * 0.15, eyeY, slimeScaledWidth * 0.1, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.fillStyle = '#1e293b';
+            ctx.beginPath();
+            ctx.arc(-slimeScaledWidth * 0.15, eyeY, slimeScaledWidth * 0.06, 0, Math.PI * 2);
+            ctx.arc(slimeScaledWidth * 0.15, eyeY, slimeScaledWidth * 0.06, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Highlight
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+            ctx.beginPath();
+            ctx.arc(-slimeScaledWidth * 0.2, -slimeScaledHeight * 0.3, slimeScaledWidth * 0.15, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.restore();
         }
 
         function updateGame() {
@@ -1095,48 +1462,119 @@
             }
 
             slime.x += (slime.targetX - slime.x) * 0.15;
+            
+            // Final safety check to ensure slime stays within bounds
+            slime.x = Math.max(slimeScaledWidth / 2, Math.min(canvasWidth - slimeScaledWidth / 2, slime.x));
 
+            // Update boss
+            if (bossMode && boss) {
+                const minion = boss.update();
+                if (minion) bubbles.push(minion);
+                updateBossHealthBar();
+            }
+
+            // Update bubbles
             bubbles.forEach((bubble, index) => {
                 bubble.update();
 
                 if (checkCollision(bubble)) {
                     if (bubble.type === 'good') {
-                        const points = bubble.points * (activePowerup === 'double' ? 2 : 1);
-                        score += points;
-                        combo++;
-                        comboTimer = 120;
-                        
-                        if (combo > bestCombo) bestCombo = combo;
-                        
-                        showCombo();
-                        createParticles(bubble.x, bubble.y, bubble.color, 20);
-                        playBubblePop();
+                        if (bubble.takeDamage()) {
+                            const comboMultiplier = Math.min(1 + (combo * 0.1), 2.5);
+                            const powerupMultiplier = activePowerup === 'double' ? 2 : 1;
+                            const points = Math.floor(bubble.points * comboMultiplier * powerupMultiplier);
+                            score += points;
+                            combo++;
+                            comboTimer = 180;
+                            bubblesPopped++;
+                            
+                            if (combo > bestCombo) bestCombo = combo;
+                            
+                            showCombo();
+                            createParticles(bubble.x, bubble.y, bubble.color, 20);
+                            playSound(800 + (combo * 20), 0.1, 'sine');
+                            
+                            // Handle special effects
+                            const children = bubble.split();
+                            bubbles.push(...children);
+                            
+                            if (bubble.specialType === 'explosive') {
+                                explosiveBubblesPopped++;
+                                if (explosiveBubblesPopped >= 10) {
+                                    unlockAchievement('explosive_10', 'Demolition Expert', 'Popped 10 explosive bubbles');
+                                }
+                                
+                                const targets = bubble.explode();
+                                targets.forEach(idx => {
+                                    if (bubbles[idx] && bubbles[idx].takeDamage()) {
+                                        score += 10;
+                                        createParticles(bubbles[idx].x, bubbles[idx].y, bubbles[idx].color, 10);
+                                    }
+                                });
+                                createParticles(bubble.x, bubble.y, '#f59e0b', 40);
+                                playSound(200, 0.3, 'sawtooth');
+                            }
+                            
+                            bubbles.splice(index, 1);
+                            
+                            // Check achievements
+                            if (combo === 5) unlockAchievement('combo_5', 'Combo Starter', '5x combo');
+                            if (combo === 10) unlockAchievement('combo_10', 'Combo Master', '10x combo');
+                            if (combo === 20) unlockAchievement('combo_20', 'Combo Legend', '20x combo');
+                            if (score >= 5000) unlockAchievement('score_5000', 'High Scorer', 'Reached 5000 points');
+                        } else {
+                            // Multi-hit bubble, not destroyed yet
+                            score += 15;
+                            playSound(700, 0.08, 'sine');
+                        }
                     } else {
+                        // Bad bubble
                         if (activePowerup !== 'shield') {
                             lives--;
-                            playHitSound();
+                            playSound(100, 0.2, 'sawtooth');
+                            createParticles(bubble.x, bubble.y, '#ef4444', 25);
                             if (lives <= 0) {
-                                endGame();
+                                setTimeout(endGame, 500);
                             }
+                        } else {
+                            // Shield absorbed hit
+                            playSound(400, 0.1, 'square');
+                            createParticles(bubble.x, bubble.y, '#06b6d4', 15);
                         }
                         combo = 0;
-                        createParticles(bubble.x, bubble.y, '#ef4444', 25);
+                        bubbles.splice(index, 1);
                     }
-                    bubbles.splice(index, 1);
                 }
 
                 if (bubble.y > canvasHeight + bubble.radius) {
                     bubbles.splice(index, 1);
                     if (bubble.type === 'good') {
                         lives--;
-                        combo = 0;
+                        combo = Math.max(0, combo - 3);
+                        playSound(150, 0.15, 'sawtooth');
                         if (lives <= 0) {
-                            endGame();
+                            setTimeout(endGame, 500);
                         }
                     }
                 }
             });
 
+            // Boss collision with slime
+            if (bossMode && boss) {
+                const dx = boss.x - slime.x;
+                const dy = boss.y - slime.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                
+                if (dist < boss.radius + (slime.width * scale / 2)) {
+                    if (boss.takeDamage(1)) {
+                        endBossBattle(true);
+                    } else {
+                        playSound(300, 0.1, 'sawtooth');
+                    }
+                }
+            }
+
+            // Update powerups
             powerups.forEach((powerup, index) => {
                 powerup.update();
 
@@ -1144,37 +1582,17 @@
                 const dy = powerup.y - slime.y;
                 const distance = Math.sqrt(dx * dx + dy * dy);
 
-                if (distance < powerup.radius + slimeScaledWidth / 2) {
+                if (distance < powerup.radius + (slime.width * scale / 2)) {
                     activatePowerup(powerup.type);
-                    createParticles(powerup.x, powerup.y, '#fbbf24', 30);
                     powerups.splice(index, 1);
                 }
 
-                if (powerup.y > canvasHeight + powerup.radius) {
+                if (powerup.y > canvasHeight) {
                     powerups.splice(index, 1);
                 }
             });
 
-            obstacles.forEach((obstacle, index) => {
-                obstacle.update();
-
-                if (obstacle.checkCollision()) {
-                    lives--;
-                    playHitSound();
-                    combo = 0;
-                    createParticles(obstacle.x + obstacle.width / 2, obstacle.y + obstacle.height / 2, '#ef4444', 30);
-                    obstacles.splice(index, 1);
-                    
-                    if (lives <= 0) {
-                        endGame();
-                    }
-                }
-
-                if (obstacle.y > canvasHeight) {
-                    obstacles.splice(index, 1);
-                }
-            });
-
+            // Update particles
             particles.forEach((particle, index) => {
                 particle.update();
                 if (particle.life <= 0) {
@@ -1182,48 +1600,50 @@
                 }
             });
 
+            // Update combo timer
             if (comboTimer > 0) {
                 comboTimer--;
-            } else {
+            } else if (combo > 0) {
                 combo = 0;
             }
 
+            // Update powerup timer
             if (powerupTimer > 0) {
                 powerupTimer--;
-            } else if (activePowerup) {
-                activePowerup = null;
-                document.getElementById('powerupIndicator').style.display = 'none';
+                if (powerupTimer === 0) {
+                    activePowerup = null;
+                    document.getElementById('powerupIndicator').style.display = 'none';
+                }
             }
 
-            if (score > 0 && score % 100 === 0 && bubbles.length < 15) {
-                level = Math.floor(score / 100) + 1;
-            }
+            // Check level up
+            checkLevelUp();
 
-            bgOffset += 0.5 * scale;
-            updateUI();
-        }
-
-        function drawBackground() {
-            ctx.fillStyle = '#1a1a2e';
-            ctx.fillRect(0, 0, canvasWidth, canvasHeight);
-
-            for (let i = 0; i < 100; i++) {
-                const x = (i * 137.5 * scale) % canvasWidth;
-                const y = ((i * 97.3 * scale + bgOffset) % canvasHeight);
-                const size = (1 + (i % 3)) * scale;
-                ctx.fillStyle = `rgba(255,255,255,${0.1 + (i % 3) * 0.05})`;
-                ctx.beginPath();
-                ctx.arc(x, y, size, 0, Math.PI * 2);
-                ctx.fill();
-            }
+            // Update UI
+            document.getElementById('score').textContent = 'Score: ' + score;
+            document.getElementById('level').textContent = 'Level: ' + level;
+            const heartsDisplay = '❤️'.repeat(Math.max(0, lives));
+            document.getElementById('lives').textContent = 'Lives: ' + heartsDisplay;
         }
 
         function drawGame() {
-            drawBackground();
-            particles.forEach(particle => particle.draw());
-            obstacles.forEach(obstacle => obstacle.draw());
-            bubbles.forEach(bubble => bubble.draw());
-            powerups.forEach(powerup => powerup.draw());
+            if (!gameRunning) return;
+
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+            // Draw stars background
+            for (let i = 0; i < 30; i++) {
+                ctx.fillStyle = 'rgba(255,255,255,' + (0.2 + Math.random() * 0.3) + ')';
+                const x = (i * 47 + Date.now() * 0.01) % canvasWidth;
+                const y = (i * 73) % canvasHeight;
+                ctx.fillRect(x, y, 2 * scale, 2 * scale);
+            }
+
+            particles.forEach(p => p.draw());
+            bubbles.forEach(b => b.draw());
+            if (bossMode && boss) boss.draw();
+            powerups.forEach(p => p.draw());
             drawSlime();
         }
 
@@ -1233,62 +1653,84 @@
             requestAnimationFrame(gameLoop);
         }
 
-        function updateUI() {
-            document.getElementById('score').textContent = score;
-            document.getElementById('level').textContent = level;
-            document.getElementById('lives').textContent = '❤️'.repeat(lives);
+        let spawnInterval;
+
+        function startGame() {
+            initAudio();
+            
+            document.getElementById('startMenu').style.display = 'none';
+            document.getElementById('gameOver').style.display = 'none';
+            
+            score = 0;
+            level = 1;
+            lives = 3;
+            levelStartLives = 3;
+            bubbles = [];
+            particles = [];
+            powerups = [];
+            combo = 0;
+            bestCombo = 0;
+            bossMode = false;
+            boss = null;
+            bubblesPopped = 0;
+            bubblesNeededForLevel = 30;
+            achievements = [];
+            explosiveBubblesPopped = 0;
+            perfectLevels = 0;
+            
+            gameRunning = true;
+            resizeCanvas();
+            
+            slime.x = canvasWidth / 2;
+            slime.targetX = canvasWidth / 2;
+            slime.y = canvasHeight - (80 * scale);
+            
+            clearInterval(spawnInterval);
+            spawnInterval = setInterval(() => {
+                if (gameRunning && !bossMode) {
+                    spawnBubble();
+                    if (Math.random() < 0.05) spawnPowerup();
+                }
+            }, 800);
+            
+            gameLoop();
         }
 
         function endGame() {
             gameRunning = false;
-            document.getElementById('finalScore').textContent = score;
-            document.getElementById('finalLevel').textContent = level;
-            document.getElementById('bestCombo').textContent = bestCombo;
+            clearInterval(spawnInterval);
+            
+            document.getElementById('finalScore').textContent = 'Final Score: ' + score;
+            document.getElementById('finalLevel').textContent = 'Level Reached: ' + level;
+            document.getElementById('bestComboText').textContent = 'Best Combo: ' + bestCombo + 'x';
             document.getElementById('gameOver').style.display = 'block';
+            
+            playSound(200, 0.5, 'sawtooth');
         }
 
         function restartGame() {
-            score = 0;
-            level = 1;
-            lives = 3;
-            combo = 0;
-            bestCombo = 0;
-            bubbles = [];
-            particles = [];
-            powerups = [];
-            obstacles = [];
-            activePowerup = null;
-            powerupTimer = 0;
-            gameRunning = true;
-            document.getElementById('gameOver').style.display = 'none';
-            
-            // Reset slime position
-            slime.x = canvasWidth / 2;
-            slime.y = canvasHeight - 80 * scale;
-            slime.targetX = canvasWidth / 2;
-            
-            updateUI();
+            startGame();
         }
 
-        function showMainMenu() {
+        function showMenu() {
             document.getElementById('gameOver').style.display = 'none';
             document.getElementById('startMenu').style.display = 'flex';
             gameRunning = false;
-            bubbles = [];
-            particles = [];
-            powerups = [];
-            obstacles = [];
         }
 
-        async function submitScore() {
-            const name = prompt('Enter your name for the leaderboard:', currentPlayerName || 'Player');
-            if (name && name.trim()) {
-                currentPlayerName = name.trim();
-                const success = await window.saveScoreToFirebase(currentPlayerName, score);
-                if (success) {
-                    showLeaderboard();
-                }
+        let currentPlayerName = '';
+        
+        async function saveScore() {
+            const nameInput = document.getElementById('playerNameInput');
+            const playerName = nameInput.value.trim();
+            
+            if (!playerName) {
+                alert('Please enter your name!');
+                return;
             }
+            
+            currentPlayerName = playerName;
+            await window.saveScoreToFirebase(playerName, score);
         }
 
         async function showLeaderboard() {
@@ -1339,32 +1781,15 @@
             document.getElementById('startMenu').style.display = 'flex';
         }
 
-        function selectSlime(color) {
-            selectedSlimeColor = color;
-            document.querySelectorAll('.slimeOption').forEach(option => {
-                option.classList.remove('selected');
+        // Event listeners
+        document.querySelectorAll('.slimeOption').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('.slimeOption').forEach(opt => opt.classList.remove('selected'));
+                this.classList.add('selected');
+                selectedSlimeColor = this.dataset.color;
             });
-            document.querySelector(`[data-color="${color}"]`).classList.add('selected');
-            playSound(600, 0.1, 'sine');
-        }
+        });
 
-        function startGame() {
-            document.getElementById('startMenu').style.display = 'none';
-            gameRunning = true;
-            lives = 3;
-            score = 0;
-            level = 1;
-            combo = 0;
-            
-            // Set initial slime position based on current canvas size
-            slime.x = canvasWidth / 2;
-            slime.y = canvasHeight - 80 * scale;
-            slime.targetX = canvasWidth / 2;
-            
-            initAudio();
-        }
-
-        // Input handlers
         document.addEventListener('keydown', (e) => {
             keys[e.key] = true;
         });
@@ -1373,59 +1798,36 @@
             keys[e.key] = false;
         });
 
-        canvas.addEventListener('mousemove', (e) => {
+        document.addEventListener('mousemove', (e) => {
             const rect = canvas.getBoundingClientRect();
-            slime.targetX = e.clientX - rect.left;
+            mouseX = (e.clientX - rect.left) * (canvasWidth / rect.width);
+            if (gameRunning) {
+                const slimeScaledWidth = slime.width * scale;
+                // Constrain slime within canvas bounds
+                slime.targetX = Math.max(slimeScaledWidth / 2, Math.min(canvasWidth - slimeScaledWidth / 2, mouseX));
+            }
         });
 
         canvas.addEventListener('touchmove', (e) => {
             e.preventDefault();
             const rect = canvas.getBoundingClientRect();
             const touch = e.touches[0];
-            slime.targetX = touch.clientX - rect.left;
-        }, { passive: false });
-
-        canvas.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            const rect = canvas.getBoundingClientRect();
-            const touch = e.touches[0];
-            slime.targetX = touch.clientX - rect.left;
-        }, { passive: false });
-
-        // Spawn intervals
-        setInterval(() => {
+            mouseX = (touch.clientX - rect.left) * (canvasWidth / rect.width);
             if (gameRunning) {
-                spawnBubble();
+                const slimeScaledWidth = slime.width * scale;
+                // Constrain slime within canvas bounds
+                slime.targetX = Math.max(slimeScaledWidth / 2, Math.min(canvasWidth - slimeScaledWidth / 2, mouseX));
             }
-        }, 1500 / Math.max(1, level * 0.8));
-
-        setInterval(() => {
-            if (gameRunning && Math.random() < 0.3) {
-                spawnPowerup();
-            }
-        }, 5000);
-
-        setInterval(() => {
-            if (gameRunning && level > 2 && Math.random() < 0.4) {
-                spawnObstacle();
-            }
-        }, 4000);
-
-        // Initialize slime previews
-        document.querySelectorAll('.slimePreview').forEach((canvas, index) => {
-            const colors = ['blue', 'pink', 'green', 'purple', 'orange'];
-            drawSlimePreview(canvas, colors[index]);
         });
 
-        // Handle window resize
         window.addEventListener('resize', () => {
-            resizeCanvas();
+            if (gameRunning) resizeCanvas();
         });
 
-        // Initial setup
+        // Initialize
         resizeCanvas();
-        updateUI();
-        gameLoop();
+        console.log('🎮 Slime Bubble Pop Loaded!');
+        console.log('✨ Have fun catching bubbles!');
     </script>
 </body>
 </html>
